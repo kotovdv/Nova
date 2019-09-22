@@ -3,30 +3,23 @@ using System.Linq;
 using UnityEngine;
 using Random = System.Random;
 
-public class Space
+public class GameFactory
 {
-    private Planet[] _planets;
-    private Vector2 _playerPosition;
-
-    public static Planet[] Generate(SpaceConfiguration spaceConfiguration)
+    public static IGame Generate(Configuration configuration)
     {
-        var tileSize = spaceConfiguration.minN * 10;
+        var planets = GenerateTile(configuration);
 
-        return GenerateTile(tileSize, spaceConfiguration.density);
+        var rating = new Random().Next(configuration.minRating, configuration.maxRating);
+        var tileSize = configuration.minN;
+        var ship = new Ship(rating, new Vector2(tileSize / 2, tileSize / 2));
+
+        return new Game(ship, configuration.minN, planets, Vector2.zero);
     }
 
-    private Space()
+    private static Planet[] GenerateTile(Configuration configuration)
     {
-    }
-
-    public void GeneratePlanets()
-    {
-        var planet = new Planet();
-    }
-
-    private static Planet[] GenerateTile(int tileSize, float density)
-    {
-        var planetsCount = Mathf.CeilToInt(density * (tileSize * tileSize));
+        var tileSize = configuration.minN;
+        var planetsCount = Mathf.CeilToInt(configuration.density * (tileSize * tileSize));
 
         var grid = new Vector2[tileSize, tileSize];
 
@@ -58,12 +51,11 @@ public class Space
             if (planetNumber >= planets.Length) break;
 
             planets[planetNumber++] = new Planet(
-                random.Next(0, 12000),
+                random.Next(configuration.minRating, configuration.maxRating),
                 UnityEngine.Random.ColorHSV(),
                 grid[i, j]
             );
         }
-
 
         return planets;
     }
