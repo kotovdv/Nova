@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ce2db8b38254e3699f49018a0293841, type: 3}
+  m_Name: Configuration
+  m_EditorClassIdentifier: 
+  minN: 5
+  maxN: 10000
+  density: 0.3
+  minRating: 0
+  maxRating: 12000
+  alternativeViewThreshold: 10
+  alternativeViewCapacity: 20
