@@ -10,14 +10,14 @@ public class ShipView : MonoBehaviour
     public void Init(IGame game)
     {
         _game = game;
-        var spaceShip = game.Ship;
-        textMesh.text = spaceShip.Rating.ToString();
-        shipTransform.position = spaceShip.Position;
+        textMesh.text = game.PlayerRating.ToString();
+        shipTransform.position = new Vector3(game.PlayerPosition.x, game.PlayerPosition.y);
     }
 
-    void Update()
+    //TODO Add proper controls
+    private void Update()
     {
-        Direction direction = Direction.None;
+        var direction = Direction.None;
 
         if (Input.GetKeyDown(KeyCode.W))
         {

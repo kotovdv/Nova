@@ -3,27 +3,37 @@ using UnityEngine;
 
 public class ObjectPool
 {
-    private readonly GameObject _prefab;
-    private readonly Stack<GameObject> _stack;
+    private readonly Stack<GameObject> _storage;
 
-    public ObjectPool(GameObject prefab, int capacity, int initialSize)
+    public static ObjectPool Construct(GameObject prefab, int size)
     {
-        _prefab = prefab;
-        _stack = new Stack<GameObject>(capacity);
+        var stack = new Stack<GameObject>(size);
 
-        for (var i = 0; i < initialSize; i++)
+        for (var i = 0; i < size; i++)
         {
-            _stack.Push(Object.Instantiate(prefab));
+            var gameObject = Object.Instantiate(prefab);
+            gameObject.SetActive(false);
+            stack.Push(gameObject);
         }
+
+        return new ObjectPool(stack);
+    }
+
+    private ObjectPool(Stack<GameObject> storage)
+    {
+        _storage = storage;
     }
 
     public GameObject Borrow()
     {
-        return _stack.Pop();
+        var gameObject = _storage.Pop();
+        gameObject.SetActive(true);
+        return gameObject;
     }
 
     public void Return(GameObject gameObject)
     {
-        _stack.Push(gameObject);
+        gameObject.SetActive(false);
+        _storage.Push(gameObject);
     }
 }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ce2db8b38254e3699f49018a0293841, type: 3}
   m_Name: Configuration
   m_EditorClassIdentifier: 
-  minN: 5
+  minN: 6
   maxN: 10000
   density: 0.3
   minRating: 0

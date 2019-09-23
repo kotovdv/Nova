@@ -12,7 +12,7 @@ public enum Direction
 
 public static class DirectionExtensions
 {
-    private static readonly Dictionary<Direction, Vector2> Mapping = new Dictionary<Direction, Vector2>
+    private static readonly IDictionary<Direction, Vector2> Mapping = new Dictionary<Direction, Vector2>
     {
         {Direction.None, Vector2.zero},
         {Direction.Left, Vector2.left},
