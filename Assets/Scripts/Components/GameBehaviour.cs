@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class GameBehaviour : MonoBehaviour
 {
+    [SerializeField] private UIView uiView = default;
     [SerializeField] private GameObject shipPrefab = default;
     [SerializeField] private GameObject planetPrefab = default;
     [SerializeField] private Configuration configuration = default;
 
     private IGame _game;
+    private ShipView _shipView;
     private GridCamera _gridCamera;
     private ObjectPool<PlanetView> _planetsPool;
-
-    private ShipView _shipView;
     private readonly IDictionary<Position, PlanetView> _planetViews = new Dictionary<Position, PlanetView>();
 
     //Bootstrap game.
@@ -77,6 +77,7 @@ public class GameBehaviour : MonoBehaviour
 
     private void UpdateGameState(State state)
     {
+        uiView.Init(state.Zoom, state.PlayerPosition);
         _shipView.SetPosition(state.PlayerPosition);
 
         foreach (var position in state.BecameInvisible)
