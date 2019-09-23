@@ -33,6 +33,12 @@ public class Configuration : ScriptableObject
     [Min(0)]
     public int alternativeViewCapacity;
 
+    //Maximum amount of planets that can be displayed in any game view.
+    public int MaximumObservablePlanets => Mathf.CeilToInt(Math.Max(
+        alternativeViewCapacity,
+        alternativeViewThreshold * alternativeViewThreshold
+    ));
+
     private void OnValidate()
     {
         Assert.IsTrue(minN <= maxN, "Min view distance should be less or equal to max view distance");

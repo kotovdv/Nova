@@ -1,11 +1,21 @@
 public readonly struct Position
 {
-    public readonly int x, y;
+    public readonly int X, Y;
 
     public Position(int x, int y)
     {
-        this.x = x;
-        this.y = y;
+        X = x;
+        Y = y;
+    }
+
+    public static Position operator +(Position p1, Position p2)
+    {
+        return new Position(p1.X + p2.X, p1.Y + p2.Y);
+    }
+
+    public static Position operator -(Position p1, Position p2)
+    {
+        return new Position(p1.X - p2.X, p1.Y - p2.Y);
     }
 
     public override bool Equals(object obj)
@@ -17,17 +27,17 @@ public readonly struct Position
     {
         unchecked
         {
-            return (x * 397) ^ y;
+            return (X * 397) ^ Y;
         }
     }
 
     public override string ToString()
     {
-        return $"{nameof(x)}: {x}, {nameof(y)}: {y}";
+        return $"{nameof(X)}: {X}, {nameof(Y)}: {Y}";
     }
 
     private bool Equals(Position other)
     {
-        return x == other.x && y == other.y;
+        return X == other.X && Y == other.Y;
     }
 }

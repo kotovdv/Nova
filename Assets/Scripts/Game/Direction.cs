@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using UnityEngine;
 
 public enum Direction
 {
-    None,
     Up,
     Down,
     Left,
@@ -12,16 +10,15 @@ public enum Direction
 
 public static class DirectionExtensions
 {
-    private static readonly IDictionary<Direction, Vector2> Mapping = new Dictionary<Direction, Vector2>
+    private static readonly IDictionary<Direction, Position> Mapping = new Dictionary<Direction, Position>
     {
-        {Direction.None, Vector2.zero},
-        {Direction.Left, Vector2.left},
-        {Direction.Right, Vector2.right},
-        {Direction.Up, Vector2.up},
-        {Direction.Down, Vector2.down}
+        {Direction.Left, new Position(-1, 0)},
+        {Direction.Right, new Position(1, 0)},
+        {Direction.Up, new Position(0, 1)},
+        {Direction.Down, new Position(0, -1)}
     };
 
-    public static Vector2 ToVector2(this Direction direction)
+    public static Position ToPosition(this Direction direction)
     {
         return Mapping[direction];
     }

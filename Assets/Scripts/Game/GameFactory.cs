@@ -1,19 +1,9 @@
-using System;
-using UnityEngine;
-using Random = System.Random;
-
 public class GameFactory
 {
     public static IGame Generate(Configuration configuration)
     {
-        //todo not exactly correct
-        var maximumObservablePlanets = Mathf.CeilToInt(Math.Max(
-            configuration.alternativeViewCapacity,
-            configuration.alternativeViewThreshold * configuration.alternativeViewThreshold
-        ));
-
         var spaceFactory = new SpaceFactory(
-            maximumObservablePlanets,
+            configuration.MaximumObservablePlanets,
             configuration.density,
             configuration.minRating,
             configuration.maxRating
@@ -24,13 +14,16 @@ public class GameFactory
         var rating = ThreadLocalRandom.Current().Next(configuration.minRating, configuration.maxRating);
         var spawnPosition = spaceGrid.GetSpawnPosition();
 
-        return new Game(
-            rating,
+        var movementMechanics = new MovementMechanics(
             spawnPosition,
-            configuration.minN,
             spaceGrid,
-            maximumObservablePlanets,
-            configuration
+            configuration.minN,
+            configuration.maxN,
+            configuration.alternativeViewThreshold
         );
+
+        movementMechanics.Init();
+
+        return new Game(rating, movementMechanics);
     }
 }

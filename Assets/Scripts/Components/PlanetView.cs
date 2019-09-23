@@ -10,6 +10,6 @@ public class PlanetView : MonoBehaviour
     {
         spriteRenderer.color = planet.Color;
         ratingTextMesh.text = planet.Rating.ToString();
-        planetTransform.position = new Vector3(position.x, position.y);
+        planetTransform.position = new Vector3(position.X, position.Y);
     }
 }
