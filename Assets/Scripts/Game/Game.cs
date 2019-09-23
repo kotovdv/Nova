@@ -16,12 +16,12 @@ public class Game : IGame
 
     public void ZoomIn()
     {
-        throw new NotImplementedException();
+        _movementMechanics.ZoomIn();
     }
 
     public void ZoomOut()
     {
-        throw new NotImplementedException();
+        _movementMechanics.ZoomOut();
     }
 
     public Position Move(Direction direction)
@@ -29,6 +29,7 @@ public class Game : IGame
         return _movementMechanics.MovePlayer(direction);
     }
 
+    public int Zoom => _movementMechanics.Zoom;
     public int PlayerRating => _playerRating;
     public Position PlayerPosition => _movementMechanics.PlayerPosition;
     public IDictionary<Position, Planet> ObservablePlanets => _movementMechanics.ObservablePlanets;

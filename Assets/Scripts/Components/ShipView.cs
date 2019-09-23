@@ -13,6 +13,4 @@ public class ShipView : MonoBehaviour
         textMesh.text = game.PlayerRating.ToString();
         shipTransform.position = new Vector3(game.PlayerPosition.X, game.PlayerPosition.Y);
     }
-
-
 }

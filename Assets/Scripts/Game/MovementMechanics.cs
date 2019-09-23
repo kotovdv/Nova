@@ -30,6 +30,7 @@ public class MovementMechanics
         _playerPosition = playerPosition;
     }
 
+    public int Zoom => _zoom;
     public Position PlayerPosition => _playerPosition;
     public IDictionary<Position, Planet> ObservablePlanets => _observablePlanets;
 
@@ -55,6 +56,34 @@ public class MovementMechanics
             }
         }
     }
+
+    //Get rid of a square around current view
+    public void ZoomIn()
+    {
+        RemoveColumn(_leftX);
+        RemoveColumn(_leftX + _zoom - 1);
+        RemoveRow(_bottomY);
+        RemoveRow(_bottomY + _zoom - 1);
+
+        _leftX++;
+        _bottomY++;
+        _zoom -= 2;
+    }
+
+    //Add a square around current view
+    public void ZoomOut()
+    {
+        AddColumn(_bottomY - 1, _bottomY + _zoom, _leftX - 1);
+        AddColumn(_bottomY - 1, _bottomY + _zoom, _leftX + _zoom);
+
+        AddRow(_leftX - 1, _leftX + _zoom, _bottomY - 1);
+        AddRow(_leftX - 1, _leftX + _zoom, _bottomY + _zoom);
+
+        _leftX--;
+        _bottomY--;
+        _zoom += 2;
+    }
+
 
     public Position MovePlayer(Direction direction)
     {
@@ -89,7 +118,7 @@ public class MovementMechanics
             var planet = _spaceGrid[x, y];
             if (planet.HasValue)
             {
-                _observablePlanets.Add(new Position(x, y), planet.Value);
+                _observablePlanets[new Position(x, y)] = planet.Value;
             }
         }
     }
@@ -101,7 +130,7 @@ public class MovementMechanics
             var planet = _spaceGrid[x, y];
             if (planet.HasValue)
             {
-                _observablePlanets.Add(new Position(x, y), planet.Value);
+                _observablePlanets[new Position(x, y)] = planet.Value;
             }
         }
     }
