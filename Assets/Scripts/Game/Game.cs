@@ -98,7 +98,7 @@ public class Game : IGame
 
     public State ZoomIn()
     {
-        if (_zoom - 1 <= _conf.MinZoom)
+        if (_zoom <= _conf.MinZoom)
         {
             return new State(
                 _zoom,
@@ -111,14 +111,25 @@ public class Game : IGame
         }
 
         var becameInvisible = new List<Position>();
-        RemoveColumn(_leftX, becameInvisible);
-        RemoveColumn(_leftX + _zoom - 1, becameInvisible);
-        RemoveRow(_bottomY, becameInvisible);
-        RemoveRow(_bottomY + _zoom - 1, becameInvisible);
 
-        _leftX++;
-        _bottomY++;
-        _zoom -= 2;
+        if (_zoom % 2 != 0)
+        {
+            //Bottom row
+            RemoveRow(_bottomY, becameInvisible);
+            //Right column
+            RemoveColumn(_leftX + _zoom - 1, becameInvisible);
+            _bottomY++;
+        }
+        else
+        {
+            //Top row
+            RemoveRow(_bottomY + _zoom - 1, becameInvisible);
+            //Left column
+            RemoveColumn(_leftX, becameInvisible);
+            _leftX++;
+        }
+
+        _zoom--;
         _isAlternativeView = _zoom >= _conf.AlternativeViewThreshold;
 
         return new State(
@@ -133,7 +144,7 @@ public class Game : IGame
 
     public State ZoomOut()
     {
-        if (_zoom + 1 >= _conf.MaxZoom)
+        if (_zoom >= _conf.AlternativeViewThreshold || _zoom >= _conf.MaxZoom)
         {
             return new State(
                 _zoom,
@@ -146,15 +157,25 @@ public class Game : IGame
         }
 
         var becameVisible = new Dictionary<Position, Planet>();
-        AddColumn(_bottomY - 1, _bottomY + _zoom, _leftX - 1, becameVisible);
-        AddColumn(_bottomY - 1, _bottomY + _zoom, _leftX + _zoom, becameVisible);
 
-        AddRow(_leftX - 1, _leftX + _zoom, _bottomY - 1, becameVisible);
-        AddRow(_leftX - 1, _leftX + _zoom, _bottomY + _zoom, becameVisible);
+        if (_zoom % 2 == 0)
+        {
+            //Bottom row
+            AddRow(_leftX, _leftX + _zoom + 1, _bottomY - 1, becameVisible);
+            //Right column
+            AddColumn(_bottomY, _bottomY + _zoom, _leftX + _zoom, becameVisible);
+            _bottomY--;
+        }
+        else
+        {
+            //Top row
+            AddRow(_leftX - 1, _leftX + _zoom, _bottomY + _zoom, becameVisible);
+            //Left column
+            AddColumn(_bottomY, _bottomY + _zoom, _leftX - 1, becameVisible);
+            _leftX--;
+        }
 
-        _leftX--;
-        _bottomY--;
-        _zoom += 2;
+        _zoom++;
         _isAlternativeView = _zoom >= _conf.AlternativeViewThreshold;
 
         return new State(
@@ -166,7 +187,7 @@ public class Game : IGame
             EmptyList
         );
     }
-    
+
     private void AddRow(int fromX, int toX, int y, IDictionary<Position, Planet> becameVisible)
     {
         for (var x = fromX; x < toX; x++)

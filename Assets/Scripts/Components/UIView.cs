@@ -9,6 +9,6 @@ public class UIView : MonoBehaviour
     public void Init(int zoom, Position position)
     {
         zoomText.text = "ZOOM: " + zoom;
-        positionText.text = "POSITION: " + position.X + "," + position.Y;
+        positionText.text = "COORDINATES: " + position.X + "," + position.Y;
     }
 }

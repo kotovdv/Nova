@@ -24,7 +24,7 @@ public class GridCamera : MonoBehaviour
     public void Adjust(int gridSize)
     {
         _currentGridSize = gridSize;
-        var requiredSize = Mathf.CeilToInt(gridSize / 2F);
+        var requiredSize = Mathf.CeilToInt(gridSize / 2F) + 1;
         if (cam.aspect < 1.0F)
         {
             requiredSize = Mathf.CeilToInt(requiredSize / cam.aspect);
