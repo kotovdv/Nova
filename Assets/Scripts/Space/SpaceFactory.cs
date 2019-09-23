@@ -16,9 +16,14 @@ public class SpaceFactory
         _maxRating = maxRating;
     }
 
-    public SpaceGrid CreateGrid()
+    public (SpaceGrid, Position) CreateGrid()
     {
-        return new SpaceGrid(CreateTile(), this);
+        var tile = CreateTile();
+        var offset = TileSize / 2 + 1;
+        var playerPos = new Position(offset, offset);
+        var spaceGrid = new SpaceGrid(tile, this);
+
+        return (spaceGrid, playerPos);
     }
 
     public SpaceTile CreateTile()

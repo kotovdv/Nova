@@ -10,8 +10,7 @@ public readonly struct Planet
         Rating = rating;
         Color = color;
     }
-
-
+    
     public override string ToString()
     {
         return $"{nameof(Rating)}: {Rating}, {nameof(Color)}: {Color}";

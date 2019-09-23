@@ -5,12 +5,14 @@ public class ShipView : MonoBehaviour
     [SerializeField] private TextMesh textMesh;
     [SerializeField] private Transform shipTransform;
 
-    private IGame _game;
-
-    public void Init(IGame game)
+    public void Init(int playerRating, Position playerPosition)
     {
-        _game = game;
-        textMesh.text = game.PlayerRating.ToString();
-        shipTransform.position = new Vector3(game.PlayerPosition.X, game.PlayerPosition.Y);
+        SetPosition(playerPosition);
+        textMesh.text = playerRating.ToString();
+    }
+
+    public void SetPosition(Position position)
+    {
+        shipTransform.position = new Vector3(position.X, position.Y);
     }
 }

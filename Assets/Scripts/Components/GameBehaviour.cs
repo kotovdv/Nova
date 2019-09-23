@@ -9,33 +9,31 @@ public class GameBehaviour : MonoBehaviour
 
     private IGame _game;
     private GridCamera _gridCamera;
-    private ObjectPool _planetsPool;
+    private ObjectPool<PlanetView> _planetsPool;
 
     private ShipView _shipView;
-    private IList<PlanetView> _planetViews = new List<PlanetView>();
+    private readonly IDictionary<Position, PlanetView> _planetViews = new Dictionary<Position, PlanetView>();
 
     //Bootstrap game.
     public void Start()
     {
-        _game = GameFactory.Generate(configuration);
-        //TODO CHANGE
-        _planetsPool = ObjectPool.Construct(planetPrefab, 10_000);
+        _planetsPool = ObjectPool<PlanetView>.Construct(
+            planetPrefab,
+            configuration.MaximumObservablePlanets,
+            go => go.GetComponent<PlanetView>()
+        );
 
-        foreach (var currentPlanet in _game.ObservablePlanets)
-        {
-            var planetInstance = _planetsPool.Borrow();
-            var planetView = planetInstance.GetComponent<PlanetView>();
-            planetView.Init(currentPlanet.Key, currentPlanet.Value);
-            _planetViews.Add(planetView);
-        }
+        var (gameInstance, initialState) = GameFactory.Generate(configuration);
+        _game = gameInstance;
 
         var shipInstance = Instantiate(shipPrefab);
         _gridCamera = shipInstance.GetComponentInChildren<GridCamera>();
-        _gridCamera.Adjust(_game.Zoom);
+        _gridCamera.Adjust(initialState.Zoom);
 
-        var shipView = shipInstance.GetComponent<ShipView>();
-        shipView.Init(_game);
-        _shipView = shipView;
+        _shipView = shipInstance.GetComponent<ShipView>();
+        _shipView.Init(initialState.PlayerRating, initialState.PlayerPosition);
+
+        UpdateGameState(initialState);
     }
 
     private void Update()
@@ -61,44 +59,42 @@ public class GameBehaviour : MonoBehaviour
 
         if (direction.HasValue)
         {
-            var position = _game.Move(direction.Value);
-            _shipView.gameObject.transform.position = new Vector3(position.X, position.Y);
-            RedrawPlanets();
+            UpdateGameState(_game.Move(direction.Value));
         }
 
         var delta = Input.mouseScrollDelta;
 
         if (delta != Vector2.zero)
         {
-            if (delta.y > 0)
-            {
-                _game.ZoomIn();
-            }
-            else
-            {
-                _game.ZoomOut();
-            }
+            var state = delta.y > 0
+                ? _game.ZoomIn()
+                : _game.ZoomOut();
 
-            RedrawPlanets();
-            _gridCamera.Adjust(_game.Zoom);
+            UpdateGameState(state);
+            _gridCamera.Adjust(state.Zoom);
         }
     }
 
-    private void RedrawPlanets()
+    private void UpdateGameState(State state)
     {
-        foreach (var currentPlanet in _planetViews)
+        _shipView.SetPosition(state.PlayerPosition);
+
+        foreach (var position in state.BecameInvisible)
         {
-            _planetsPool.Return(currentPlanet.gameObject);
+            var planetView = _planetViews.GetOrDefault(position);
+
+            _planetViews.Remove(position);
+            _planetsPool.Return(planetView);
         }
 
-        _planetViews.Clear();
-
-        foreach (var currentPlanet in _game.ObservablePlanets)
+        foreach (var kvp in state.BecameVisible)
         {
-            var planetInstance = _planetsPool.Borrow();
-            var planetView = planetInstance.GetComponent<PlanetView>();
-            planetView.Init(currentPlanet.Key, currentPlanet.Value);
-            _planetViews.Add(planetView);
+            var position = kvp.Key;
+            var planet = kvp.Value;
+            var planetView = _planetsPool.Borrow();
+
+            planetView.Init(position, planet);
+            _planetViews.Add(position, planetView);
         }
     }
 }

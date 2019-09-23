@@ -1,39 +1,42 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-public class ObjectPool
+public class ObjectPool<T> where T : MonoBehaviour
 {
-    private readonly Stack<GameObject> _storage;
+    private readonly Stack<T> _storage;
 
-    public static ObjectPool Construct(GameObject prefab, int size)
+    public static ObjectPool<T> Construct(GameObject prefab, int size, Func<GameObject, T> componentExtractor)
     {
-        var stack = new Stack<GameObject>(size);
+        var stack = new Stack<T>(size);
 
         for (var i = 0; i < size; i++)
         {
-            var gameObject = Object.Instantiate(prefab);
-            gameObject.SetActive(false);
-            stack.Push(gameObject);
+            var go = Object.Instantiate(prefab);
+            go.SetActive(false);
+            var component = componentExtractor.Invoke(go);
+            stack.Push(component);
         }
 
-        return new ObjectPool(stack);
+        return new ObjectPool<T>(stack);
     }
 
-    private ObjectPool(Stack<GameObject> storage)
+    private ObjectPool(Stack<T> storage)
     {
         _storage = storage;
     }
 
-    public GameObject Borrow()
+    public T Borrow()
     {
-        var gameObject = _storage.Pop();
-        gameObject.SetActive(true);
-        return gameObject;
+        var component = _storage.Pop();
+        component.gameObject.SetActive(true);
+        return component;
     }
 
-    public void Return(GameObject gameObject)
+    public void Return(T t)
     {
-        gameObject.SetActive(false);
-        _storage.Push(gameObject);
+        t.gameObject.SetActive(false);
+        _storage.Push(t);
     }
 }

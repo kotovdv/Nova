@@ -15,12 +15,6 @@ public class SpaceGrid
 
     public Planet? this[int x, int y] => GetValue(x, y);
 
-    public Position GetSpawnPosition()
-    {
-        var offset = _factory.TileSize / 2 + 1;
-        return new Position(offset, offset);
-    }
-
     private Planet? GetValue(int x, int y)
     {
         var gridRow = x / _factory.TileSize;
