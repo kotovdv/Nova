@@ -34,9 +34,9 @@ public class Configuration : ScriptableObject
     [SerializeField] private int alternativeViewCapacity;
 
 
+    public float Density => density;
     public int MinZoom => minZoom;
     public int MaxZoom => maxZoom;
-    public float Density => density;
     public int MinRating => minRating;
     public int MaxRating => maxRating;
     public int AlternativeViewThreshold => alternativeViewThreshold;

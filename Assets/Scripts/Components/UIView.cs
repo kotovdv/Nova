@@ -3,12 +3,16 @@ using UnityEngine.UI;
 
 public class UIView : MonoBehaviour
 {
-    public Text zoomText;
-    public Text positionText;
+    [SerializeField] private Text zoomText;
+    [SerializeField] private Text positionText;
 
-    public void Init(int zoom, Position position)
+    public void UpdateZoom(int zoom)
     {
         zoomText.text = "ZOOM: " + zoom;
+    }
+
+    public void UpdatePosition(Position position)
+    {
         positionText.text = "COORDINATES: " + position.X + "," + position.Y;
     }
 }

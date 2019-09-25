@@ -1,6 +1,5 @@
 public interface IGame
 {
-    State ZoomIn();
-    State ZoomOut();
+    State Zoom(bool inside);
     State Move(Direction direction);
 }

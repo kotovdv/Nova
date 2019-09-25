@@ -62,40 +62,35 @@ public class GameBehaviour : MonoBehaviour
             UpdateGameState(_game.Move(direction.Value));
         }
 
-        var delta = Input.mouseScrollDelta;
-
-        if (delta != Vector2.zero)
-        {
-            var state = delta.y > 0
-                ? _game.ZoomIn()
-                : _game.ZoomOut();
-
-            UpdateGameState(state);
-            _gridCamera.Adjust(state.Zoom);
-        }
+        var mouseScrollDelta = Input.mouseScrollDelta;
+        if (mouseScrollDelta == Vector2.zero) return;
+        
+        UpdateGameState(_game.Zoom(mouseScrollDelta.y > 0));
     }
 
     private void UpdateGameState(State state)
     {
-        uiView.Init(state.Zoom, state.PlayerPosition);
-        _shipView.SetPosition(state.PlayerPosition);
+        var zoom = state.Zoom;
+        uiView.UpdateZoom(zoom);
+        _gridCamera.Adjust(zoom);
 
-        foreach (var position in state.BecameInvisible)
+        var playerPosition = state.PlayerPosition;
+        uiView.UpdatePosition(playerPosition);
+        _shipView.SetPosition(playerPosition);
+
+        foreach (var posPlanet in _planetViews)
         {
-            var planetView = _planetViews.GetOrDefault(position);
-
-            _planetViews.Remove(position);
-            _planetsPool.Return(planetView);
+            _planetsPool.Return(posPlanet.Value);
         }
 
-        foreach (var kvp in state.BecameVisible)
-        {
-            var position = kvp.Key;
-            var planet = kvp.Value;
-            var planetView = _planetsPool.Borrow();
+        _planetViews.Clear();
 
-            planetView.Init(position, planet);
-            _planetViews.Add(position, planetView);
+        foreach (var posPlanet in state.VisiblePlanets)
+        {
+            var planetView = _planetViews.GetOrCompute(posPlanet.Key, () => _planetsPool.Borrow());
+            planetView.gameObject.SetActive(true);
+
+            planetView.Init(posPlanet.Key, posPlanet.Value);
         }
     }
 }

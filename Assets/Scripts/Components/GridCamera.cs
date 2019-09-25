@@ -4,9 +4,7 @@ using UnityEngine;
 public class GridCamera : MonoBehaviour
 {
     [SerializeField] private Camera cam;
-
     private int _currentGridSize;
-
     private float _currentAspect;
 
     private void Awake()

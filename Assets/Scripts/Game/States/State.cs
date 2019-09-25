@@ -6,24 +6,19 @@ public readonly struct State
     public readonly int PlayerRating;
     public readonly bool IsAlternativeView;
     public readonly Position PlayerPosition;
-
-    //TODO RESTRICT ACCESS.
-    public readonly IDictionary<Position, Planet> BecameVisible;
-    public readonly IList<Position> BecameInvisible;
+    public readonly IReadOnlyDictionary<Position, Planet> VisiblePlanets;
 
     public State(
         int zoom,
         int playerRating,
         bool isAlternativeView,
         Position playerPosition,
-        IDictionary<Position, Planet> becameVisible,
-        IList<Position> becameInvisible)
+        IReadOnlyDictionary<Position, Planet> visiblePlanets)
     {
         Zoom = zoom;
         PlayerRating = playerRating;
-        PlayerPosition = playerPosition;
-        BecameVisible = becameVisible;
-        BecameInvisible = becameInvisible;
         IsAlternativeView = isAlternativeView;
+        PlayerPosition = playerPosition;
+        VisiblePlanets = visiblePlanets;
     }
 }

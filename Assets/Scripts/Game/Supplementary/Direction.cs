@@ -18,8 +18,21 @@ public static class DirectionExtensions
         {Direction.Down, new Position(0, -1)}
     };
 
+    private static readonly IDictionary<Direction, Direction> Opposites = new Dictionary<Direction, Direction>
+    {
+        {Direction.Left, Direction.Right},
+        {Direction.Right, Direction.Left},
+        {Direction.Up, Direction.Down},
+        {Direction.Down, Direction.Up}
+    };
+
     public static Position ToPosition(this Direction direction)
     {
         return Mapping[direction];
+    }
+
+    public static Direction ToOpposite(this Direction direction)
+    {
+        return Opposites[direction];
     }
 }

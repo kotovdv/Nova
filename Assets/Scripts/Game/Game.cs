@@ -1,19 +1,22 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.ObjectModel;
 
-public class Game : IGame
+public partial class Game : IGame
 {
-    private static readonly List<Position> EmptyList = new List<Position>();
-    private static readonly Dictionary<Position, Planet> EmptyDict = new Dictionary<Position, Planet>();
+    private static readonly Direction[][] ZoomDirection = new[]
+    {
+        new[] {Direction.Down, Direction.Right},
+        new[] {Direction.Up, Direction.Left},
+    };
 
     private readonly int _playerRating;
     private readonly Configuration _conf;
     private readonly SpaceGrid _spaceGrid;
-    private readonly IDictionary<Position, Planet> _observablePlanets;
 
     private int _zoom;
-    private bool _isAlternativeView;
-    private int _leftX, _bottomY;
+    private int _leftX, _altLeftX;
+    private int _bottomY, _altBottomY;
     private Position _playerPosition;
 
     public Game(
@@ -26,7 +29,13 @@ public class Game : IGame
         _playerPosition = playerPosition;
         _spaceGrid = spaceGrid;
         _conf = conf;
-        _observablePlanets = new Dictionary<Position, Planet>();
+        _alternativeViewSet = new AlternativeViewSet(conf.AlternativeViewCapacity, _playerRating);
+
+        _observable = new Dictionary<Position, Planet>();
+        _readOnlyObservable = new ReadOnlyDictionary<Position, Planet>(_observable);
+
+        _altObservable = new Dictionary<Position, Planet>();
+        _readOnlyAltObservable = new ReadOnlyDictionary<Position, Planet>(_altObservable);
     }
 
     public State Init()
@@ -35,202 +44,101 @@ public class Game : IGame
         var offset = _zoom / 2;
 
         _leftX = _playerPosition.X - offset;
-        var rightX = _leftX + _zoom;
-
         _bottomY = _playerPosition.Y - offset;
-        var topY = _bottomY + _zoom;
+        _altLeftX = _leftX;
+        _altBottomY = _bottomY;
 
-        _observablePlanets.Clear();
+        _spaceGrid.Traverse(_leftX, _leftX + _zoom, _bottomY, _bottomY + _zoom, CombinedShow);
 
-        for (var x = _leftX; x < rightX; x++)
-        for (var y = _bottomY; y < topY; y++)
-        {
-            var planet = _spaceGrid[x, y];
-            if (planet.HasValue)
-            {
-                _observablePlanets.Add(new Position(x, y), planet.Value);
-            }
-        }
-
-        return new State(
-            _zoom,
-            _playerRating,
-            _isAlternativeView,
-            _playerPosition,
-            _observablePlanets,
-            EmptyList
-        );
+        return CurrentState();
     }
 
     public State Move(Direction direction)
     {
-        _playerPosition += direction.ToPosition();
+        var delta = direction.ToPosition();
+        _playerPosition += delta;
 
-        var becameVisible = new Dictionary<Position, Planet>();
-        var becameInvisible = new List<Position>();
-        if (direction == Direction.Up || direction == Direction.Down)
-        {
-            var add = direction == Direction.Up ? _bottomY + _zoom : _bottomY - 1;
-            var remove = direction == Direction.Up ? _bottomY : _bottomY + _zoom - 1;
+        var altViewSize = _zoom;
+        _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction, AltShow);
+        _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction.ToOpposite(), AltHide);
+        _altLeftX += delta.X;
+        _altBottomY += delta.Y;
 
-            AddRow(_leftX, _leftX + _zoom, add, becameVisible);
-            RemoveRow(remove, becameInvisible);
-            _bottomY += direction == Direction.Up ? 1 : -1;
-        }
-        else
+        var regularViewSize = Math.Min(_conf.AlternativeViewThreshold, _zoom);
+        _spaceGrid.Traverse(_leftX, _bottomY, regularViewSize, direction, Show);
+        _spaceGrid.Traverse(_leftX, _bottomY, regularViewSize, direction.ToOpposite(), Hide);
+        _leftX += delta.X;
+        _bottomY += delta.Y;
+
+        return CurrentState();
+    }
+
+    public State Zoom(bool inside)
+    {
+        if (!CanZoom(inside)) return CurrentState();
+
+        var targetZoom = inside ? _zoom - 1 : _zoom;
+        var zoomSides = ZoomDirection[targetZoom % 2];
+
+        var action = inside ? (Action<Position>) CombinedHide : CombinedShow;
+
+        var vertical = zoomSides[0];
+        var horizontal = zoomSides[1];
+
+        var deltaX = 0;
+        if (horizontal == Direction.Left)
         {
-            var add = direction == Direction.Right ? _leftX + _zoom : _leftX - 1;
-            var remove = direction == Direction.Right ? _leftX : _leftX + _zoom - 1;
-            AddColumn(_bottomY, _bottomY + _zoom, add, becameVisible);
-            RemoveColumn(remove, becameInvisible);
-            _leftX += direction == Direction.Right ? 1 : -1;
+            deltaX = inside ? 1 : -1;
         }
+
+        var deltaY = 0;
+        if (vertical == Direction.Down)
+        {
+            deltaY = inside ? 1 : -1;
+        }
+
+        _spaceGrid.Traverse(
+            _leftX + (!inside ? deltaX : 0),
+            _bottomY + (inside ? deltaY : 0),
+            _zoom - (!inside ? deltaX : 0),
+            _zoom - (inside ? 1 : 0),
+            vertical,
+            action
+        );
+        _spaceGrid.Traverse(
+            _leftX + (inside ? deltaX : 0),
+            _bottomY + (!inside ? deltaY : 0),
+            _zoom - (inside ? 1 : 0),
+            _zoom - (!inside ? deltaY : 0),
+            horizontal,
+            action
+        );
+
+        _zoom += inside ? -1 : 1;
+        _leftX += deltaX;
+        _bottomY += deltaY;
+
+        return CurrentState();
+    }
+
+
+    private bool CanZoom(bool inside)
+    {
+        var delta = inside ? -1 : 1;
+
+        return _conf.MinZoom <= (_zoom + delta) && (_zoom + delta) <= _conf.MaxZoom;
+    }
+
+    private State CurrentState()
+    {
+        var isRegularView = _zoom < _conf.AlternativeViewThreshold;
 
         return new State(
             _zoom,
             _playerRating,
-            _isAlternativeView,
+            isRegularView,
             _playerPosition,
-            becameVisible,
-            becameInvisible
+            isRegularView ? _readOnlyObservable : _readOnlyAltObservable
         );
-    }
-
-    public State ZoomIn()
-    {
-        if (_zoom <= _conf.MinZoom)
-        {
-            return new State(
-                _zoom,
-                _playerRating,
-                _isAlternativeView,
-                _playerPosition,
-                EmptyDict,
-                EmptyList
-            );
-        }
-
-        var becameInvisible = new List<Position>();
-
-        if (_zoom % 2 != 0)
-        {
-            //Bottom row
-            RemoveRow(_bottomY, becameInvisible);
-            //Right column
-            RemoveColumn(_leftX + _zoom - 1, becameInvisible);
-            _bottomY++;
-        }
-        else
-        {
-            //Top row
-            RemoveRow(_bottomY + _zoom - 1, becameInvisible);
-            //Left column
-            RemoveColumn(_leftX, becameInvisible);
-            _leftX++;
-        }
-
-        _zoom--;
-        _isAlternativeView = _zoom >= _conf.AlternativeViewThreshold;
-
-        return new State(
-            _zoom,
-            _playerRating,
-            _isAlternativeView,
-            _playerPosition,
-            EmptyDict,
-            becameInvisible
-        );
-    }
-
-    public State ZoomOut()
-    {
-        if (_zoom >= _conf.AlternativeViewThreshold || _zoom >= _conf.MaxZoom)
-        {
-            return new State(
-                _zoom,
-                _playerRating,
-                _isAlternativeView,
-                _playerPosition,
-                EmptyDict,
-                EmptyList
-            );
-        }
-
-        var becameVisible = new Dictionary<Position, Planet>();
-
-        if (_zoom % 2 == 0)
-        {
-            //Bottom row
-            AddRow(_leftX, _leftX + _zoom + 1, _bottomY - 1, becameVisible);
-            //Right column
-            AddColumn(_bottomY, _bottomY + _zoom, _leftX + _zoom, becameVisible);
-            _bottomY--;
-        }
-        else
-        {
-            //Top row
-            AddRow(_leftX - 1, _leftX + _zoom, _bottomY + _zoom, becameVisible);
-            //Left column
-            AddColumn(_bottomY, _bottomY + _zoom, _leftX - 1, becameVisible);
-            _leftX--;
-        }
-
-        _zoom++;
-        _isAlternativeView = _zoom >= _conf.AlternativeViewThreshold;
-
-        return new State(
-            _zoom,
-            _playerRating,
-            _isAlternativeView,
-            _playerPosition,
-            becameVisible,
-            EmptyList
-        );
-    }
-
-    private void AddRow(int fromX, int toX, int y, IDictionary<Position, Planet> becameVisible)
-    {
-        for (var x = fromX; x < toX; x++)
-        {
-            var planet = _spaceGrid[x, y];
-            if (!planet.HasValue) continue;
-
-            var position = new Position(x, y);
-            becameVisible[position] = planet.Value;
-            _observablePlanets[position] = planet.Value;
-        }
-    }
-
-    private void AddColumn(int fromY, int toY, int x, IDictionary<Position, Planet> becameVisible)
-    {
-        for (var y = fromY; y < toY; y++)
-        {
-            var planet = _spaceGrid[x, y];
-            if (!planet.HasValue) continue;
-
-            var position = new Position(x, y);
-            becameVisible[position] = planet.Value;
-            _observablePlanets[position] = planet.Value;
-        }
-    }
-
-    private void RemoveRow(int y, ICollection<Position> becameInvisible)
-    {
-        var planetsInRow = _observablePlanets.Where(kvp => kvp.Key.Y == y).Select(kvp => kvp.Key).ToList();
-        foreach (var position in planetsInRow)
-        {
-            _observablePlanets.Remove(position);
-            becameInvisible.Add(position);
-        }
-    }
-
-    private void RemoveColumn(int x, ICollection<Position> becameInvisible)
-    {
-        var planetsInRow = _observablePlanets.Where(kvp => kvp.Key.X == x).Select(kvp => kvp.Key).ToList();
-        foreach (var position in planetsInRow)
-        {
-            _observablePlanets.Remove(position);
-            becameInvisible.Add(position);
-        }
     }
 }
