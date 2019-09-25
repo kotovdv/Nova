@@ -32,8 +32,11 @@ public class Configuration : ScriptableObject
     //Maximum amount of planets that can be displayed simultaneously in rating based view.
     [Min(0)]
     [SerializeField] private int alternativeViewCapacity;
-
-
+    
+    //Space will be generated via tiles with given TileSize. Choose carefully.
+    [Min(0)]
+    [SerializeField] private int tileSize;
+    
     public float Density => density;
     public int MinZoom => minZoom;
     public int MaxZoom => maxZoom;
@@ -41,6 +44,7 @@ public class Configuration : ScriptableObject
     public int MaxRating => maxRating;
     public int AlternativeViewThreshold => alternativeViewThreshold;
     public int AlternativeViewCapacity => alternativeViewCapacity;
+    public int TileSize => tileSize;
 
     //Maximum amount of planets that can be displayed in any game view.
     public int MaximumObservablePlanets => Mathf.CeilToInt(Math.Max(

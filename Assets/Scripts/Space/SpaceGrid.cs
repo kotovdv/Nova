@@ -3,14 +3,20 @@ using System.Collections.Generic;
 
 public class SpaceGrid
 {
-    private static readonly Position SpawnPosition = new Position(0, 0);
+    private readonly Configuration _conf;
     private readonly SpaceFactory _factory;
     private readonly IDictionary<Position, SpaceTile> _grid = new Dictionary<Position, SpaceTile>();
 
-    public SpaceGrid(SpaceTile initialTile, SpaceFactory factory)
+    public SpaceGrid(
+        Configuration conf,
+        SpaceTile initialTile,
+        SpaceFactory factory,
+        Position spawnPosition
+    )
     {
+        _conf = conf;
         _factory = factory;
-        _grid.Add(SpawnPosition, initialTile);
+        _grid.Add(spawnPosition, initialTile);
     }
 
     public Planet GetPlanet(Position position)
@@ -26,13 +32,13 @@ public class SpaceGrid
 
     private Planet? TryGetPlanet(Position position)
     {
-        var gridRow = position.X / _factory.TileSize;
-        var gridColumn = position.Y / _factory.TileSize;
+        var gridRow = position.X / _conf.TileSize;
+        var gridColumn = position.Y / _conf.TileSize;
 
         var tile = _grid.GetOrCompute(new Position(gridRow, gridColumn), _factory.CreateTile);
 
-        var tileRow = Math.Abs(position.X % _factory.TileSize);
-        var tileColumn = Math.Abs(position.Y % _factory.TileSize);
+        var tileRow = Math.Abs(position.X % _conf.TileSize);
+        var tileColumn = Math.Abs(position.Y % _conf.TileSize);
 
         return tile[tileRow, tileColumn];
     }

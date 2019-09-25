@@ -1,25 +1,19 @@
 public class GameFactory
 {
-    public static (IGame, State) Generate(Configuration configuration)
+    public static (IGame, State) Generate(Configuration conf)
     {
-        var spaceFactory = new SpaceFactory(
-            configuration.MaximumObservablePlanets,
-            configuration.Density,
-            configuration.MinRating,
-            configuration.MaxRating
-        );
-
-        var (grid, playerPos) = spaceFactory.CreateGrid();
-
-        var rating = ThreadLocalRandom
+        var playerRating = ThreadLocalRandom
             .Current()
-            .Next(configuration.MinRating, configuration.MaxRating);
+            .Next(conf.MinRating, conf.MaxRating);
 
+        var spaceFactory = new SpaceFactory(playerRating, conf);
+        var playerPosition = new Position(0, 0);
+        var grid = spaceFactory.CreateGrid(playerPosition);
         var game = new Game(
-            rating,
-            playerPos,
+            playerRating,
+            playerPosition,
             grid,
-            configuration
+            conf
         );
 
         var initialState = game.Init();

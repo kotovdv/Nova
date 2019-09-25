@@ -19,3 +19,4 @@ MonoBehaviour:
   maxRating: 12000
   alternativeViewThreshold: 10
   alternativeViewCapacity: 20
+  tileSize: 100

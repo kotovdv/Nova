@@ -71,32 +71,47 @@ public partial class Game : IGame
     {
         if (!CanZoom(inside)) return CurrentState();
 
-        var targetZoom = inside ? _zoom - 1 : _zoom;
+        _zoom += inside ? -1 : 1;
+        var isAltView = _zoom >= _conf.AlternativeViewThreshold;
 
-        var action = inside ? (Action<Position>) CombinedHide : CombinedShow;
+        var action = inside
+            ? (isAltView ? (Action<Position>) AltHide : CombinedHide)
+            : (isAltView ? (Action<Position>) AltShow : CombinedShow);
 
-        if (targetZoom % 2 == 0)
+        if ((_zoom + (inside ? 1 : 0)) % 2 == 0)
         {
-            var zoomOffset = inside ? -1 : 0;
-            _spaceGrid.TraverseTopToRight(_leftX, _bottomY, _zoom + zoomOffset, action);
+            var zoomOffset = !inside ? -1 : 0;
+
+            _spaceGrid.TraverseTopToRight(
+                isAltView ? _altLeftX : _leftX,
+                isAltView ? _altBottomY : _bottomY,
+                _zoom + zoomOffset,
+                action
+            );
         }
         else
         {
             var offset = (inside ? 1 : 0);
-            _spaceGrid.TraverseBottomToLeft(_leftX + offset, _bottomY + offset, _zoom, action);
+            var zoomOffset = !inside ? -1 : 0;
+
+            _spaceGrid.TraverseBottomToLeft(
+                (isAltView ? _altLeftX : _leftX) + offset,
+                (isAltView ? _altBottomY : _bottomY) + offset,
+                _zoom + zoomOffset,
+                action
+            );
 
             var delta = inside ? 1 : -1;
-            if (_zoom <= _conf.AlternativeViewThreshold)
+
+            _altLeftX += delta;
+            _altBottomY += delta;
+            if (_zoom < _conf.AlternativeViewThreshold)
             {
                 _leftX += delta;
                 _bottomY += delta;
             }
-
-            _altLeftX += delta;
-            _altBottomY += delta;
         }
 
-        _zoom += inside ? -1 : 1;
 
         return CurrentState();
     }
@@ -112,6 +127,17 @@ public partial class Game : IGame
     private State CurrentState()
     {
         var isRegularView = _zoom < _conf.AlternativeViewThreshold;
+
+        if (!isRegularView)
+        {
+            _altObservable.Clear();
+            var currentlyVisible = _alternativeViewSet.CurrentlyVisible();
+            foreach (var position in currentlyVisible)
+            {
+                var planet = _spaceGrid.GetPlanet(position);
+                _altObservable[position] = planet;
+            }
+        }
 
         return new State(
             _zoom,

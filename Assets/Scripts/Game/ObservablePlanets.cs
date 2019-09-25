@@ -30,12 +30,7 @@ public partial class Game
     {
         var planet = _spaceGrid.GetPlanet(position);
 
-        var (wasAdded, removed) = _alternativeViewSet.Add(planet, position, _playerPosition);
-        if (!wasAdded) return;
-
-        _altObservable[position] = planet;
-        if (!removed.HasValue) return;
-        _altObservable.Remove(removed.Value);
+        _alternativeViewSet.Add(position, planet.Rating);
     }
 
     private void Hide(Position position)
@@ -45,7 +40,6 @@ public partial class Game
 
     private void AltHide(Position position)
     {
-        _altObservable.Remove(position);
-        _alternativeViewSet.Remove(position);
+        _alternativeViewSet.Remove(position, _spaceGrid.GetPlanet(position).Rating);
     }
 }

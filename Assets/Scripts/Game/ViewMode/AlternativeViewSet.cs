@@ -5,47 +5,44 @@ public class AlternativeViewSet
 {
     private readonly int _capacity;
     private readonly int _playerRating;
-    private readonly SortedSet<AltPosition> _storage = new SortedSet<AltPosition>();
+
+    private readonly SortedSet<RatingDiff> _storage;
+    private readonly IList<Position> _currentlyVisibleBuffer;
 
     public AlternativeViewSet(int capacity, int playerRating)
     {
         _capacity = capacity;
         _playerRating = playerRating;
+        _storage = new SortedSet<RatingDiff>(RatingDiff.AscComparerWithDuplicates);
+        _currentlyVisibleBuffer = new List<Position>(_capacity);
     }
 
-    public (bool, Position?) Add(Planet planet, Position planetPosition, Position playerPosition)
+    public void Add(Position position, int planetRating)
     {
-        var width = (playerPosition.X - planetPosition.X);
-        var height = (playerPosition.Y - planetPosition.Y);
-
-        var altPosition = new AltPosition(
-            Math.Abs(_playerRating - planet.Rating),
-            height * height + width * width,
-            planetPosition
-        );
-        
-        return Add(altPosition);
+        _storage.Add(CreateRatingDiff(position, planetRating));
     }
 
-    public void Remove(Position position)
+    public void Remove(Position position, int planetRating)
     {
-        _storage.RemoveWhere(altPosition => altPosition.OriginalPosition.Equals(position));
+        _storage.Remove(CreateRatingDiff(position, planetRating));
     }
 
-    private (bool, Position?) Add(AltPosition value)
+    public IEnumerable<Position> CurrentlyVisible()
     {
-        if (_storage.Count < _capacity)
+        _currentlyVisibleBuffer.Clear();
+        var counter = 0;
+        foreach (var diff in _storage)
         {
-            _storage.Add(value);
-            return (true, null);
+            if (counter == _capacity) break;
+            _currentlyVisibleBuffer.Add(diff.Position);
+            counter++;
         }
 
-        var storedMin = _storage.Min;
-        if (storedMin.CompareTo(value) >= 0) return (false, null);
+        return _currentlyVisibleBuffer;
+    }
 
-        _storage.Remove(storedMin);
-        _storage.Add(value);
-
-        return (true, storedMin.OriginalPosition);
+    private RatingDiff CreateRatingDiff(Position position, int planetRating)
+    {
+        return new RatingDiff(Math.Abs(_playerRating - planetRating), position);
     }
 }

@@ -1,55 +1,56 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class SpaceFactory
 {
-    private readonly float _density;
-    private readonly int _minRating;
-    private readonly int _maxRating;
+    private readonly int _playerRating;
+    private readonly int _planetsPerTile;
+    private readonly Configuration _conf;
 
-    public readonly int TileSize;
-
-    public SpaceFactory(int tileSize, float density, int minRating, int maxRating)
+    public SpaceFactory(int playerRating, Configuration conf)
     {
-        TileSize = tileSize;
-        _density = density;
-        _minRating = minRating;
-        _maxRating = maxRating;
+        _conf = conf;
+        _playerRating = playerRating;
+        _planetsPerTile = Mathf.CeilToInt(_conf.Density * (_conf.TileSize * _conf.TileSize));
     }
 
-    public (SpaceGrid, Position) CreateGrid()
+    public SpaceGrid CreateGrid(Position spawnPosition)
     {
         var tile = CreateTile();
-        var offset = TileSize / 2 + 1;
-        var playerPos = new Position(offset, offset);
-        var spaceGrid = new SpaceGrid(tile, this);
+        var spaceGrid = new SpaceGrid(_conf, tile, this, spawnPosition);
 
-        return (spaceGrid, playerPos);
+        return spaceGrid;
     }
 
     public SpaceTile CreateTile()
     {
-        var storage = new Planet?[TileSize, TileSize];
-        var planetsCount = Mathf.CeilToInt(_density * (TileSize * TileSize));
+        var storage = new Planet?[_conf.TileSize, _conf.TileSize];
+        var closestToPlayerStorage = new Position[_conf.AlternativeViewCapacity];
 
-        PopulateTile(storage, planetsCount);
+        PopulateTile(storage);
         ShuffleTile(storage);
+        PopulateClosestPlanetsByRating(storage, closestToPlayerStorage);
 
-        return new SpaceTile(storage);
+        return new SpaceTile(storage, closestToPlayerStorage);
     }
 
-    private void PopulateTile(Planet?[,] storage, int planetsCount)
+    private void PopulateTile(Planet?[,] storage)
     {
         var rnd = ThreadLocalRandom.Current();
 
         var currentCount = 0;
-        for (var i = 0; i < TileSize; i++)
-        for (var j = 0; j < TileSize; j++)
+        for (var i = 0; i < _conf.TileSize; i++)
+        for (var j = 0; j < _conf.TileSize; j++)
         {
-            if (currentCount == planetsCount) break;
+            if (currentCount == _planetsPerTile) break;
 
-            var rating = rnd.Next(_minRating, _maxRating);
+            var planetRating = rnd.Next(_conf.MinRating, _conf.MaxRating);
             var color = Random.ColorHSV();
-            storage[i, j] = new Planet(rating, color);
+            var planet = new Planet(planetRating, color);
+            storage[i, j] = planet;
+
             currentCount++;
         }
     }
@@ -60,16 +61,42 @@ public class SpaceFactory
 
         for (var i = storage.Length - 1; i > 0; i--)
         {
-            var i0 = i / TileSize;
-            var i1 = i % TileSize;
+            var i0 = i / _conf.TileSize;
+            var i1 = i % _conf.TileSize;
 
             var j = rnd.Next(i + 1);
-            var j0 = j / TileSize;
-            var j1 = j % TileSize;
+            var j0 = j / _conf.TileSize;
+            var j1 = j % _conf.TileSize;
 
             var temp = storage[i0, i1];
             storage[i0, i1] = storage[j0, j1];
             storage[j0, j1] = temp;
         }
+    }
+
+    private void PopulateClosestPlanetsByRating(Planet?[,] storage, Position[] closestToPlayerStorage)
+    {
+        var temp = new List<RatingDiff>(_planetsPerTile);
+        
+        for (var i = 0; i < _conf.TileSize; i++)
+        for (var j = 0; j < _conf.TileSize; j++)
+        {
+            var optionalPlanet = storage[i, j];
+            if (!optionalPlanet.HasValue) continue;
+            var planet = optionalPlanet.Value;
+
+            var ratingDiff = Math.Abs(_playerRating - planet.Rating);
+
+            temp.Add((new RatingDiff(ratingDiff, new Position(i, j))));
+        }
+
+        temp.Sort(RatingDiff.AscComparerWithDuplicates);
+
+        for (var i = 0; i < closestToPlayerStorage.Length; i++)
+        {
+            closestToPlayerStorage[i] = temp[i].Position;
+        }
+
+        temp.Clear();
     }
 }
