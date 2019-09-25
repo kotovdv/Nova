@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public readonly struct RatingDiff
 {
-    public static readonly IComparer<RatingDiff> AscComparerWithDuplicates = new RatingDiffDescComparer();
+    public static readonly IComparer<RatingDiff> AscComparator = new RatingDiffDescComparer();
 
     public readonly int Value;
     public readonly Position Position;
@@ -12,21 +12,17 @@ public readonly struct RatingDiff
         Value = value;
         Position = position;
     }
+
+    public override string ToString()
+    {
+        return $"{nameof(Value)}: {Value}, {nameof(Position)}: {Position}";
+    }
 }
 
 public class RatingDiffDescComparer : IComparer<RatingDiff>
 {
     public int Compare(RatingDiff x, RatingDiff y)
     {
-        if (x.Position.Equals(y.Position))
-        {
-            return 0;
-        }
-
-        var result = x.Value.CompareTo(y.Value);
-
-        return result != 0
-            ? result
-            : -1;
+        return x.Value.CompareTo(y.Value);
     }
 }

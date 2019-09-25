@@ -90,7 +90,7 @@ public class SpaceFactory
             temp.Add((new RatingDiff(ratingDiff, new Position(i, j))));
         }
 
-        temp.Sort(RatingDiff.AscComparerWithDuplicates);
+        temp.Sort(RatingDiff.AscComparator);
 
         for (var i = 0; i < closestToPlayerStorage.Length; i++)
         {
