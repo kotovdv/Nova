@@ -4,12 +4,6 @@ using System.Collections.ObjectModel;
 
 public partial class Game : IGame
 {
-    private static readonly Direction[][] ZoomDirection = new[]
-    {
-        new[] {Direction.Down, Direction.Right},
-        new[] {Direction.Up, Direction.Left},
-    };
-
     private readonly int _playerRating;
     private readonly Configuration _conf;
     private readonly SpaceGrid _spaceGrid;
@@ -78,45 +72,31 @@ public partial class Game : IGame
         if (!CanZoom(inside)) return CurrentState();
 
         var targetZoom = inside ? _zoom - 1 : _zoom;
-        var zoomSides = ZoomDirection[targetZoom % 2];
 
         var action = inside ? (Action<Position>) CombinedHide : CombinedShow;
 
-        var vertical = zoomSides[0];
-        var horizontal = zoomSides[1];
-
-        var deltaX = 0;
-        if (horizontal == Direction.Left)
+        if (targetZoom % 2 == 0)
         {
-            deltaX = inside ? 1 : -1;
+            var zoomOffset = inside ? -1 : 0;
+            _spaceGrid.TraverseTopToRight(_leftX, _bottomY, _zoom + zoomOffset, action);
         }
-
-        var deltaY = 0;
-        if (vertical == Direction.Down)
+        else
         {
-            deltaY = inside ? 1 : -1;
-        }
+            var offset = (inside ? 1 : 0);
+            _spaceGrid.TraverseBottomToLeft(_leftX + offset, _bottomY + offset, _zoom, action);
 
-        _spaceGrid.Traverse(
-            _leftX + (!inside ? deltaX : 0),
-            _bottomY + (inside ? deltaY : 0),
-            _zoom - (!inside ? deltaX : 0),
-            _zoom - (inside ? 1 : 0),
-            vertical,
-            action
-        );
-        _spaceGrid.Traverse(
-            _leftX + (inside ? deltaX : 0),
-            _bottomY + (!inside ? deltaY : 0),
-            _zoom - (inside ? 1 : 0),
-            _zoom - (!inside ? deltaY : 0),
-            horizontal,
-            action
-        );
+            var delta = inside ? 1 : -1;
+            if (_zoom <= _conf.AlternativeViewThreshold)
+            {
+                _leftX += delta;
+                _bottomY += delta;
+            }
+
+            _altLeftX += delta;
+            _altBottomY += delta;
+        }
 
         _zoom += inside ? -1 : 1;
-        _leftX += deltaX;
-        _bottomY += deltaY;
 
         return CurrentState();
     }

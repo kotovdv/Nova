@@ -24,7 +24,7 @@ public class SpaceGrid
         return optional.Value;
     }
 
-    public Planet? TryGetPlanet(Position position)
+    private Planet? TryGetPlanet(Position position)
     {
         var gridRow = position.X / _factory.TileSize;
         var gridColumn = position.Y / _factory.TileSize;
@@ -40,6 +40,18 @@ public class SpaceGrid
     public void Traverse(int leftX, int bottomY, int size, Direction direction, Action<Position> action)
     {
         Traverse(leftX, bottomY, size, size, direction, action);
+    }
+
+    public void TraverseBottomToLeft(int leftX, int bottomY, int length, Action<Position> action)
+    {
+        Traverse(leftX, bottomY, length, length, Direction.Left, action);
+        Traverse(leftX - 1, bottomY, length + 1, length, Direction.Down, action);
+    }
+
+    public void TraverseTopToRight(int leftX, int bottomY, int length, Action<Position> action)
+    {
+        Traverse(leftX, bottomY, length + 1, length, Direction.Up, action);
+        Traverse(leftX, bottomY, length, Direction.Right, action);
     }
 
     public void Traverse(int leftX, int bottomY, int sizeX, int sizeY, Direction direction, Action<Position> action)
