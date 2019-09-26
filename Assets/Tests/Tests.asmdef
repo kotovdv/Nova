@@ -2,7 +2,6 @@
     "name": "Tests",
     "references": [
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner",
         "CoreAssembly",
         "EngineComponentsAssembly"
     ],
@@ -11,7 +10,10 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "nunit.framework.dll"
+        "nunit.framework.dll",
+        "NSubstitute.dll",
+        "System.Threading.Tasks.Extensions.dll",
+        "Castle.Core.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

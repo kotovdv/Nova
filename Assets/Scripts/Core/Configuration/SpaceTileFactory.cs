@@ -8,7 +8,7 @@ using Random = System.Random;
 
 namespace Core.Configuration
 {
-    public sealed class SpaceTileFactory
+    public class SpaceTileFactory
     {
         private readonly int _tileSize;
         private readonly int _playerRating;
@@ -30,6 +30,10 @@ namespace Core.Configuration
                 conf.MaximumObservablePlanets
             );
         }
+        
+        protected SpaceTileFactory()
+        {
+        }
 
         public SpaceTileFactory(
             int playerRating,
@@ -47,7 +51,7 @@ namespace Core.Configuration
             _closestToPlayerStorageSize = closestToPlayerStorageSize;
         }
 
-        public SpaceTile CreateTile()
+        public virtual SpaceTile CreateTile()
         {
             var storage = new Planet?[_tileSize, _tileSize];
             var closestToPlayerStorage = new Position[_closestToPlayerStorageSize];

@@ -10,12 +10,14 @@ namespace Core.Model.Space
     {
         private readonly int _tileSize;
         private readonly SpaceTileFactory _tileFactory;
+        private readonly SpaceGridNavigator _navigator;
         private readonly IDictionary<Position, SpaceTile> _grid = new Dictionary<Position, SpaceTile>();
 
         public SpaceGrid(int tileSize, SpaceTileFactory tileFactory)
         {
             _tileSize = tileSize;
             _tileFactory = tileFactory;
+            _navigator = new SpaceGridNavigator(tileSize);
         }
 
         public Planet GetPlanet(Position position)
@@ -31,21 +33,13 @@ namespace Core.Model.Space
 
         private Planet? TryGetPlanet(Position position)
         {
-            var xPos = position.X;
-            var yPos = position.Y;
+            var targetPosition = _navigator.Find(position);
+            var gridPosition = targetPosition.GridPosition;
+            var tilePos = targetPosition.TilePosition;
 
-            var gridRow = (xPos >= 0 ? 1 : -1) + xPos / _tileSize;
-            var gridColumn = (yPos >= 0 ? 1 : -1) + yPos / _tileSize;
+            var tile = _grid.GetOrCompute(gridPosition, () => _tileFactory.CreateTile());
 
-            var tile = _grid.GetOrCompute(new Position(gridRow, gridColumn), _tileFactory.CreateTile);
-
-            var xPosRemained = Math.Abs(xPos % _tileSize);
-            var yPosRemained = Math.Abs(yPos % _tileSize);
-
-            var tileRow = xPos >= 0 ? xPosRemained : _tileSize - xPosRemained;
-            var tileColumn = yPos >= 0 ? yPosRemained : _tileSize - yPosRemained;
-
-            return tile[tileRow, tileColumn];
+            return tile[tilePos.X, tilePos.Y];
         }
 
         public void Traverse(int leftX, int bottomY, int size, Direction direction, Action<Position, Planet> action)
