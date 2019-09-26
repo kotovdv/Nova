@@ -1,22 +1,19 @@
 using System;
+using System.Threading;
 
-public class ThreadLocalRandom
+namespace Util
 {
-    private static readonly Random Global = new Random();
-
-    [ThreadStatic]
-    private static Random _local;
-
-    public static Random Current()
+    public static class ThreadLocalRandom
     {
-        var inst = _local;
-        if (inst == null)
-        {
-            int seed;
-            lock (Global) seed = Global.Next();
-            _local = inst = new Random(seed);
-        }
+        private static int _seed = Environment.TickCount;
+     
+        private static readonly ThreadLocal<Random> RandomWrapper = new ThreadLocal<Random>(() =>
+            new Random(Interlocked.Increment(ref _seed))
+        );
 
-        return inst;
+        public static Random Current()
+        {
+            return RandomWrapper.Value;
+        }
     }
 }
