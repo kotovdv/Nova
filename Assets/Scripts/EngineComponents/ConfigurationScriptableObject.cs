@@ -2,10 +2,10 @@ using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace UnityComponents
+namespace EngineComponents
 {
-    [CreateAssetMenu(menuName = "Nova/SpaceConfiguration")]
-    public class Configuration : ScriptableObject
+    [CreateAssetMenu(menuName = "Nova/Configuration")]
+    public class ConfigurationScriptableObject : ScriptableObject
     {
         //Min value for view distance (i.e. NxN square around the ship)
         [Min(0)]
@@ -34,25 +34,31 @@ namespace UnityComponents
         //Maximum amount of planets that can be displayed simultaneously in rating based view.
         [Min(0)]
         [SerializeField] private int alternativeViewCapacity;
-    
+
         //Space will be generated via tiles with given TileSize. Choose carefully.
         [Min(0)]
         [SerializeField] private int tileSize;
-    
-        public float Density => density;
-        public int MinZoom => minZoom;
-        public int MaxZoom => maxZoom;
-        public int MinRating => minRating;
-        public int MaxRating => maxRating;
-        public int AlternativeViewThreshold => alternativeViewThreshold;
-        public int AlternativeViewCapacity => alternativeViewCapacity;
-        public int TileSize => tileSize;
 
         //Maximum amount of planets that can be displayed in any game view.
         public int MaximumObservablePlanets => Mathf.CeilToInt(Math.Max(
             alternativeViewCapacity,
             alternativeViewThreshold * alternativeViewThreshold
         ));
+        
+        public GameConfiguration GameConfiguration()
+        {
+            return new GameConfiguration(
+                minZoom,
+                maxZoom,
+                tileSize,
+                density,
+                minRating,
+                maxRating,
+                alternativeViewThreshold,
+                alternativeViewCapacity,
+                MaximumObservablePlanets
+            );
+        }
 
         private void OnValidate()
         {

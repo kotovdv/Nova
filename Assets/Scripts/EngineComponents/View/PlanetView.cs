@@ -1,13 +1,13 @@
 using Core.Model.Space;
 using UnityEngine;
 
-namespace UnityComponents
+namespace EngineComponents.View
 {
     public class PlanetView : MonoBehaviour
     {
-        [SerializeField] private TextMesh ratingTextMesh;
-        [SerializeField] private Transform planetTransform;
-        [SerializeField] private SpriteRenderer spriteRenderer;
+        [SerializeField] private TextMesh ratingTextMesh = default;
+        [SerializeField] private Transform planetTransform = default;
+        [SerializeField] private SpriteRenderer spriteRenderer = default;
 
         public void Init(Vector3 position, Planet planet)
         {

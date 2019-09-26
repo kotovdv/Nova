@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Core.Model.Game;
 using Core.Model.Space;
-using Util;
+using Core.Util;
 
 namespace Core.View
 {

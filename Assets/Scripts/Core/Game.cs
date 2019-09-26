@@ -8,8 +8,8 @@ namespace Core
     public class Game : IGame
     {
         private readonly int _playerRating;
-        private readonly global::UnityComponents.Configuration _conf;
         private readonly SpaceGrid _spaceGrid;
+        private readonly GameConfiguration _conf;
 
         private int _zoom;
         private int _leftX, _altLeftX;
@@ -22,7 +22,7 @@ namespace Core
             int playerRating,
             Position playerPosition,
             SpaceGrid spaceGrid,
-            global::UnityComponents.Configuration conf)
+            GameConfiguration conf)
         {
             _conf = conf;
             _spaceGrid = spaceGrid;
@@ -53,7 +53,8 @@ namespace Core
 
             var altViewSize = _zoom;
             _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction, _observablePlanets.AltShow);
-            _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction.ToOpposite(), _observablePlanets.AltHide);
+            _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction.ToOpposite(),
+                _observablePlanets.AltHide);
             _altLeftX += delta.X;
             _altBottomY += delta.Y;
 

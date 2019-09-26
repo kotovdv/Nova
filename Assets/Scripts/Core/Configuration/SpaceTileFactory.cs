@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Core.Model.Game;
 using Core.Model.Space;
+using Core.Util;
 using UnityEngine;
-using Util;
 using Random = System.Random;
 
 namespace Core.Configuration
@@ -17,7 +17,7 @@ namespace Core.Configuration
         private readonly int _planetMaxRating;
         private readonly int _closestToPlayerStorageSize;
 
-        public static SpaceTileFactory Construct(int playerRating, global::UnityComponents.Configuration conf)
+        public static SpaceTileFactory Construct(int playerRating, GameConfiguration conf)
         {
             var planetsPerTile = Mathf.CeilToInt(conf.Density * (conf.TileSize * conf.TileSize));
 

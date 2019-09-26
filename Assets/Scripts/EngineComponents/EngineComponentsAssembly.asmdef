@@ -1,0 +1,14 @@
+{
+    "name": "EngineComponentsAssembly",
+    "references": [
+        "GUID:cf98a2cef304bc44a92525c570fb59dd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
+}

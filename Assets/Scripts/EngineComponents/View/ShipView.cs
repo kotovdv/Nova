@@ -1,12 +1,12 @@
 using Core.Model.Space;
 using UnityEngine;
 
-namespace UnityComponents
+namespace EngineComponents.View
 {
     public class ShipView : MonoBehaviour
     {
-        [SerializeField] private TextMesh textMesh;
-        [SerializeField] private Transform shipTransform;
+        [SerializeField] private TextMesh textMesh = default;
+        [SerializeField] private Transform shipTransform = default;
 
         public void Init(int playerRating, Position playerPosition)
         {

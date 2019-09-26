@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Util
+namespace Core.Util
 {
     public static class ThreadLocalRandom
     {

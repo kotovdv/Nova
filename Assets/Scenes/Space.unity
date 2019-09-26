@@ -120,6 +120,18 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &57402078 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1739512992, guid: 0f04009c2b6cf6c4d9ce9aa80eca3dfb,
+    type: 3}
+  m_PrefabInstance: {fileID: 205065858862435042}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b1449668d694ffab77e5d289449532c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1120965678
 GameObject:
   m_ObjectHideFlags: 0
@@ -163,24 +175,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 489ca3a3cdac41d087822f4f9abf4d29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiView: {fileID: 1739512992}
+  uiView: {fileID: 57402078}
   shipPrefab: {fileID: 8509196248649942697, guid: 298821c2078729a44ba1848a2ee0cc6b,
     type: 3}
   planetPrefab: {fileID: 4321965703466079110, guid: 943934266d90bd943a0cc0a74f0c1d48,
     type: 3}
   configuration: {fileID: 11400000, guid: 2ce18844dfb68744590c6355eb4794e0, type: 2}
---- !u!114 &1739512992 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1739512992, guid: 0f04009c2b6cf6c4d9ce9aa80eca3dfb,
-    type: 3}
-  m_PrefabInstance: {fileID: 205065858862435042}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b1449668d694ffab77e5d289449532c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &205065858862435042
 PrefabInstance:
   m_ObjectHideFlags: 0

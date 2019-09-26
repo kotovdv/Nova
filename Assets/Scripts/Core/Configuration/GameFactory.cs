@@ -1,12 +1,12 @@
 using Core.Model.Game;
 using Core.Model.Space;
-using Util;
+using Core.Util;
 
 namespace Core.Configuration
 {
     public static class GameFactory
     {
-        public static (IGame, State) Generate(global::UnityComponents.Configuration conf)
+        public static (IGame, State) Generate(GameConfiguration conf)
         {
             var playerRating = ThreadLocalRandom
                 .Current()

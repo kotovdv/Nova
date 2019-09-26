@@ -15,7 +15,6 @@ namespace Tests
         [Test]
         public void SpaceTileTestSimplePasses()
         {
-            
             // Use the Assert class to test conditions
         }
 

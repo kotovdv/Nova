@@ -3,17 +3,19 @@ using Core;
 using Core.Configuration;
 using Core.Model.Game;
 using Core.Model.Space;
+using Core.Util;
+using EngineComponents.Util;
+using EngineComponents.View;
 using UnityEngine;
-using Util;
 
-namespace UnityComponents
+namespace EngineComponents
 {
     public class GameBehaviour : MonoBehaviour
     {
         [SerializeField] private UIView uiView = default;
         [SerializeField] private GameObject shipPrefab = default;
         [SerializeField] private GameObject planetPrefab = default;
-        [SerializeField] private Configuration configuration = default;
+        [SerializeField] private ConfigurationScriptableObject configuration = default;
 
         private IGame _game;
         private ShipView _shipView;
@@ -30,7 +32,7 @@ namespace UnityComponents
                 go => go.GetComponent<PlanetView>()
             );
 
-            var (gameInstance, initialState) = GameFactory.Generate(configuration);
+            var (gameInstance, initialState) = GameFactory.Generate(configuration.GameConfiguration());
             _game = gameInstance;
 
             var shipInstance = Instantiate(shipPrefab);

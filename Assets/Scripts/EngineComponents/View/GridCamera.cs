@@ -1,11 +1,11 @@
 ﻿using System;
 using UnityEngine;
 
-namespace UnityComponents
+namespace EngineComponents.View
 {
     public class GridCamera : MonoBehaviour
     {
-        [SerializeField] private Camera cam;
+        [SerializeField] private Camera cam = default;
         private int _currentGridSize;
         private float _currentAspect;
 

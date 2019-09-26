@@ -2,12 +2,12 @@ using Core.Model.Space;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityComponents
+namespace EngineComponents.View
 {
     public class UIView : MonoBehaviour
     {
-        [SerializeField] private Text zoomText;
-        [SerializeField] private Text positionText;
+        [SerializeField] private Text zoomText = default;
+        [SerializeField] private Text positionText = default;
 
         public void UpdateZoom(int zoom)
         {
