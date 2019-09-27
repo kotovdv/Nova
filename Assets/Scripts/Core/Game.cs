@@ -53,14 +53,14 @@ namespace Core
 
             var altViewSize = _zoom;
             _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction, _observablePlanets.AltShow);
-            _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction.ToOpposite(),
+            _spaceGrid.Traverse(_altLeftX + delta.X, _altBottomY + delta.Y, altViewSize, direction.ToOpposite(),
                 _observablePlanets.AltHide);
             _altLeftX += delta.X;
             _altBottomY += delta.Y;
 
             var regularViewSize = Math.Min(_conf.AlternativeViewThreshold, _zoom);
             _spaceGrid.Traverse(_leftX, _bottomY, regularViewSize, direction, _observablePlanets.Show);
-            _spaceGrid.Traverse(_leftX, _bottomY, regularViewSize, direction.ToOpposite(),
+            _spaceGrid.Traverse(_leftX + delta.X, _bottomY + delta.Y, regularViewSize, direction.ToOpposite(),
                 (position, planet) => _observablePlanets.Hide(position));
             _leftX += delta.X;
             _bottomY += delta.Y;

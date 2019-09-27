@@ -78,37 +78,5 @@ namespace Tests
             Assert.AreEqual(new Position(-2, -2), result.GridPosition);
             Assert.AreEqual(new Position(99, 99), result.TilePosition);
         }
-/*
-
-
-        [Test]
-        public void BorderElementsAreAccessedCorrectly()
-        {
-            var planets = new Planet?[TileSize, TileSize];
-            var spaceTile = new SpaceTile(planets, null);
-
-            var mock = Substitute.For<SpaceTileFactory>();
-            mock.CreateTile().Returns(spaceTile);
-
-            var grid = new SpaceGrid(TileSize, mock);
-            planets[0, 0] = SamplePlanetTwo;
-            planets[1, 1] = SamplePlanetOne;
-            planets[99, 99] = SamplePlanetOne;
-
-//            Assert.AreEqual(grid.GetPlanet(new Position(0, 0)), SamplePlanetTwo);
-//            Assert.AreEqual(grid.GetPlanet(new Position(1, 1)), SamplePlanetOne);
-//            Assert.AreEqual(grid.GetPlanet(new Position(99, 99)), SamplePlanetOne);
-//            Assert.AreEqual(grid.GetPlanet(new Position(100, 100)), SamplePlanetTwo);
-//            Assert.AreEqual(grid.GetPlanet(new Position(101, 101)), SamplePlanetOne);
-
-//            Assert.AreEqual(grid.GetPlanet(new Position(-1, -1)), SamplePlanetTwo);
-//            Assert.AreEqual(grid.GetPlanet(new Position(-100, -100)), SamplePlanetOne);
-            Assert.AreEqual(grid.GetPlanet(new Position(-101, -101)), SamplePlanetTwo);
-
-            mock.Received(4).CreateTile();
-        }
-*/
-
-        //Check that access to border elements (x/y =100 with tileSize = 100) can be accessed correctly.
     }
 }

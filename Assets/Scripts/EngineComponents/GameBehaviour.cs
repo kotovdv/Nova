@@ -121,6 +121,7 @@ namespace EngineComponents
                     planetPosition.Normalize();
                     planetPosition *= _gridCamera.OrthographicSize;
                     planetPosition *= scale;
+                    planetPosition += playerPosition;
                 }
 
                 planetView.Init(planetPosition, posPlanet.Value);

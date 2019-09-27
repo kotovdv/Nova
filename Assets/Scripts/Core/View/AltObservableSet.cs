@@ -34,8 +34,14 @@ namespace Core.View
         {
             var ratingDiff = CreateRatingDiff(position, planetRating);
 
-            var set = _storage[ratingDiff];
+            var set = _storage.GetOrDefault(ratingDiff);
+            if (set == null) return;
+
             set.Remove(position);
+            if (set.Count == 0)
+            {
+                _storage.Remove(ratingDiff);
+            }
         }
 
         public IEnumerable<Position> CurrentlyVisible()
