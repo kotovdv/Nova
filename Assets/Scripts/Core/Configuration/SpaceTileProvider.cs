@@ -70,12 +70,12 @@ namespace Core.Configuration
 
                 var planetRating = rnd.Next(_planetMinRating, _planetMaxRating);
 
-                var color = new Color(
-                    rnd.Next(0, 255),
-                    rnd.Next(0, 255),
-                    rnd.Next(0, 255)
-                );
-                
+                var r = (float) rnd.NextDouble();
+                var g = (float) rnd.NextDouble();
+                var b = (float) rnd.NextDouble();
+
+                var color = new Color(r, g, b);
+
                 var planet = new Planet(planetRating, color);
                 storage[i, j] = planet;
 
