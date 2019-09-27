@@ -9,14 +9,14 @@ namespace Core.Model.Space
     public class SpaceGrid
     {
         private readonly int _tileSize;
-        private readonly SpaceTileFactory _tileFactory;
+        private readonly ISpaceTileProvider _tileProvider;
         private readonly SpaceGridNavigator _navigator;
         private readonly IDictionary<Position, SpaceTile> _grid = new Dictionary<Position, SpaceTile>();
 
-        public SpaceGrid(int tileSize, SpaceTileFactory tileFactory)
+        public SpaceGrid(int tileSize, ISpaceTileProvider tileProvider)
         {
             _tileSize = tileSize;
-            _tileFactory = tileFactory;
+            _tileProvider = tileProvider;
             _navigator = new SpaceGridNavigator(tileSize);
         }
 
@@ -37,7 +37,7 @@ namespace Core.Model.Space
             var gridPosition = targetPosition.GridPosition;
             var tilePos = targetPosition.TilePosition;
 
-            var tile = _grid.GetOrCompute(gridPosition, () => _tileFactory.CreateTile());
+            var tile = _grid.GetOrCompute(gridPosition, () => _tileProvider.Take());
 
             return tile[tilePos.X, tilePos.Y];
         }

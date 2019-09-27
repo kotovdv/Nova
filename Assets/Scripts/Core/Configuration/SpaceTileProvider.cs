@@ -8,7 +8,7 @@ using Random = System.Random;
 
 namespace Core.Configuration
 {
-    public class SpaceTileFactory
+    public class SpaceTileProvider : ISpaceTileProvider
     {
         private readonly int _tileSize;
         private readonly int _playerRating;
@@ -17,11 +17,11 @@ namespace Core.Configuration
         private readonly int _planetMaxRating;
         private readonly int _closestToPlayerStorageSize;
 
-        public static SpaceTileFactory Construct(int playerRating, GameConfiguration conf)
+        public static SpaceTileProvider Construct(int playerRating, GameConfiguration conf)
         {
             var planetsPerTile = Mathf.CeilToInt(conf.Density * (conf.TileSize * conf.TileSize));
 
-            return new SpaceTileFactory(
+            return new SpaceTileProvider(
                 playerRating,
                 planetsPerTile,
                 conf.TileSize,
@@ -30,12 +30,8 @@ namespace Core.Configuration
                 conf.MaximumObservablePlanets
             );
         }
-        
-        protected SpaceTileFactory()
-        {
-        }
 
-        public SpaceTileFactory(
+        public SpaceTileProvider(
             int playerRating,
             int planetsPerTile,
             int tileSize,
@@ -51,13 +47,12 @@ namespace Core.Configuration
             _closestToPlayerStorageSize = closestToPlayerStorageSize;
         }
 
-        public virtual SpaceTile CreateTile()
+        public SpaceTile Take()
         {
             var storage = new Planet?[_tileSize, _tileSize];
             var closestToPlayerStorage = new Position[_closestToPlayerStorageSize];
 
             var rnd = ThreadLocalRandom.Current();
-            //6?
             PopulateTile(storage, rnd);
             ShuffleTile(storage, rnd);
             PopulateClosestPlanetsByRating(storage, closestToPlayerStorage);
@@ -74,7 +69,13 @@ namespace Core.Configuration
                 if (currentCount == _planetsPerTile) break;
 
                 var planetRating = rnd.Next(_planetMinRating, _planetMaxRating);
-                var color = UnityEngine.Random.ColorHSV();
+
+                var color = new Color(
+                    rnd.Next(0, 255),
+                    rnd.Next(0, 255),
+                    rnd.Next(0, 255)
+                );
+                
                 var planet = new Planet(planetRating, color);
                 storage[i, j] = planet;
 
