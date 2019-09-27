@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Core.Model.Space
 {
     public readonly struct Position
@@ -8,6 +10,11 @@ namespace Core.Model.Space
         {
             X = x;
             Y = y;
+        }
+
+        public Vector3 ToVector3()
+        {
+            return new Vector3(X, Y);
         }
 
         public static Position operator +(Position p1, Position p2)

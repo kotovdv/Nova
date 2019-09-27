@@ -8,6 +8,7 @@ namespace EngineComponents.View
         [SerializeField] private Camera cam = default;
         private int _currentGridSize;
         private float _currentAspect;
+        public float OrthographicSize => cam.orthographicSize;
 
         private void Awake()
         {

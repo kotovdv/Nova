@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Core;
 using Core.Configuration;
@@ -17,6 +18,7 @@ namespace EngineComponents
         [SerializeField] private GameObject planetPrefab = default;
         [SerializeField] private ConfigurationScriptableObject configuration = default;
 
+        private int zoom;
         private IGame _game;
         private ShipView _shipView;
         private GridCamera _gridCamera;
@@ -79,7 +81,7 @@ namespace EngineComponents
 
         private void UpdateGameState(State state)
         {
-            var zoom = state.Zoom;
+            zoom = state.Zoom;
             uiView.UpdateZoom(zoom);
             if (state.IsRegularView)
             {
@@ -95,21 +97,33 @@ namespace EngineComponents
                 _planetsPool.Return(posPlanet.Value);
             }
 
+            DisplayPlanets(state, playerPosition.ToVector3());
+        }
+
+        private void DisplayPlanets(State state, Vector3 playerPosition)
+        {
             _planetViews.Clear();
+
+            var sideSquare = Mathf.Pow(zoom / 2F, 2);
+            var maxDistance = Mathf.Sqrt(sideSquare + sideSquare);
 
             foreach (var posPlanet in state.VisiblePlanets)
             {
                 var planetView = _planetViews.GetOrCompute(posPlanet.Key, () => _planetsPool.Borrow());
                 planetView.gameObject.SetActive(true);
 
-                var visiblePosition = new Vector3(posPlanet.Key.X, posPlanet.Key.Y);
+                var planetPosition = new Vector3(posPlanet.Key.X, posPlanet.Key.Y);
                 if (!state.IsRegularView)
                 {
-                    visiblePosition.Normalize();
-                    visiblePosition *= 5;
+                    planetPosition -= playerPosition;
+                    var actualDistance = planetPosition.magnitude;
+                    var scale = actualDistance / maxDistance;
+                    planetPosition.Normalize();
+                    planetPosition *= _gridCamera.OrthographicSize;
+                    planetPosition *= scale;
                 }
 
-                planetView.Init(visiblePosition, posPlanet.Value);
+                planetView.Init(planetPosition, posPlanet.Value);
             }
         }
     }
