@@ -4,6 +4,7 @@ using Core.Model.Game;
 using Core.Model.Space;
 using Core.Util;
 using UnityEngine;
+using Color = Core.Model.Space.Color;
 using Random = System.Random;
 
 namespace Core.Configuration
@@ -70,9 +71,9 @@ namespace Core.Configuration
 
                 var planetRating = rnd.Next(_planetMinRating, _planetMaxRating);
 
-                var r = (float) rnd.NextDouble();
-                var g = (float) rnd.NextDouble();
-                var b = (float) rnd.NextDouble();
+                var r = (byte) rnd.Next(256);
+                var g = (byte) rnd.Next(256);
+                var b = (byte) rnd.Next(256);
 
                 var color = new Color(r, g, b);
 

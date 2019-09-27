@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace Core.Model.Space
 {
     public readonly struct Planet
@@ -12,7 +10,7 @@ namespace Core.Model.Space
             Rating = rating;
             Color = color;
         }
-    
+
         public override string ToString()
         {
             return $"{nameof(Rating)}: {Rating}, {nameof(Color)}: {Color}";
