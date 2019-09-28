@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Core.Configuration;
-using Core.Model.Game;
 using Core.Util;
 
 namespace Core.Model.Space
@@ -64,7 +63,7 @@ namespace Core.Model.Space
         /// </summary>
         /// <param name="square">Information about a square from the grid.</param>
         /// <param name="side">Which side of a square is being traversed (vertical or horizontal).</param>
-        /// <param name="action">Action that will be performed on all elements during traversal.</param>
+        /// <param name="action">Action that will be performed on all planets during traversal.</param>
         /// <param name="offset">Offset from leftX, bottomY in X for vertical side and Y for horizontal side.</param>
         public void Traverse(Square square, Side side, IPlanetAction action, int offset = 0)
         {
@@ -86,10 +85,15 @@ namespace Core.Model.Space
             }
         }
 
-        public void Traverse(int fromX, int toX, int fromY, int toY, IPlanetAction action)
+        /// <summary>
+        /// Executes given action for all the planets in given square
+        /// </summary>
+        /// <param name="square">Information about a square from the grid</param>
+        /// <param name="action">Action that will be performed on all planets during traversal.</param>
+        public void Traverse(Square square, IPlanetAction action)
         {
-            for (var x = fromX; x < toX; x++)
-            for (var y = fromY; y < toY; y++)
+            for (var x = square.LeftX; x < square.LeftX + square.Size; x++)
+            for (var y = square.BottomY; y < square.BottomY + square.Size; y++)
             {
                 var position = new Position(x, y);
 

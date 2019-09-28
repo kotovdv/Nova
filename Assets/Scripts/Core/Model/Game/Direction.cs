@@ -37,8 +37,7 @@ namespace Core.Model.Game
             {Direction.Up, Direction.Down},
             {Direction.Down, Direction.Up}
         };
-
-
+        
         public static Position ToPositionDelta(this Direction direction)
         {
             return PositionDeltaMapping[direction];
@@ -47,11 +46,6 @@ namespace Core.Model.Game
         public static Side ToSide(this Direction direction)
         {
             return SideMapping[direction];
-        }
-
-        public static Direction ToOpposite(this Direction direction)
-        {
-            return Opposites[direction];
         }
     }
 }

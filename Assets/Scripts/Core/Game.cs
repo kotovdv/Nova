@@ -11,12 +11,10 @@ namespace Core
         private readonly SpaceGrid _spaceGrid;
         private readonly GameConfiguration _conf;
 
-        private int _zoom;
-        private int _leftX, _altLeftX;
-        private int _bottomY, _altBottomY;
+        private Square _altView;
+        private Square _regView;
         private Position _playerPosition;
         private readonly ObservablePlanets _planets;
-        private bool IsRegularView => _zoom < _conf.AlternativeViewThreshold;
 
         public Game(
             int playerRating,
@@ -33,39 +31,35 @@ namespace Core
 
         public State Init()
         {
-            _zoom = _conf.MinZoom;
-            var offset = _zoom / 2;
-
-            _leftX = _playerPosition.X - offset;
-            _bottomY = _playerPosition.Y - offset;
-            _altLeftX = _leftX;
-            _altBottomY = _bottomY;
-
-            _spaceGrid.Traverse(_leftX, _leftX + _zoom, _bottomY, _bottomY + _zoom, _planets.CompositeShow);
+            var offset = _conf.MinZoom / 2;
+            var square = new Square(_conf.MinZoom, _playerPosition.X - offset, _playerPosition.Y - offset);
+            _regView = square;
+            _altView = square;
+            _spaceGrid.Traverse(square, _planets.CompositeShow);
 
             return CurrentState();
         }
 
+        /// <summary>
+        /// Shows + AltShows all the planets on a side, that is next to view squares when moved in given direction.
+        /// Hides + AltHides all the planets on a side, that is next to view squares when moved in opposite direction.
+        /// </summary>
         public State Move(Direction direction)
         {
-            var altView = new Square(_zoom, _altLeftX, _altBottomY);
-            var regView = new Square(Math.Min(_conf.AlternativeViewThreshold - 1, _zoom), _leftX, _bottomY);
-
             var side = direction.ToSide();
-            var posDelta = direction.ToPositionDelta();
-            var offset = Math.Min(posDelta.X + posDelta.Y, 0);
+            var delta = direction.ToPositionDelta();
+            var offset = Math.Min(delta.X + delta.Y, 0);
 
-            _spaceGrid.Traverse(regView, side, offset < 0 ? _planets.Show : _planets.Hide, offset);
-            _spaceGrid.Traverse(regView, side, offset < 0 ? _planets.Hide : _planets.Show, offset + regView.Size);
+            _spaceGrid.Traverse(_regView, side, offset < 0 ? _planets.Show : _planets.Hide, offset);
+            _spaceGrid.Traverse(_regView, side, offset < 0 ? _planets.Hide : _planets.Show, offset + _regView.Size);
 
-            _spaceGrid.Traverse(altView, side, offset < 0 ? _planets.AltShow : _planets.AltHide, offset);
-            _spaceGrid.Traverse(altView, side, offset < 0 ? _planets.AltHide : _planets.AltShow, offset + altView.Size);
+            _spaceGrid.Traverse(_altView, side, offset < 0 ? _planets.AltShow : _planets.AltHide, offset);
+            _spaceGrid.Traverse(_altView, side, offset < 0 ? _planets.AltHide : _planets.AltShow,
+                offset + _altView.Size);
 
-            _leftX += posDelta.X;
-            _bottomY += posDelta.Y;
-            _altLeftX += posDelta.X;
-            _altBottomY += posDelta.Y;
-            _playerPosition += posDelta;
+            _playerPosition += delta;
+            _regView = _regView.Shift(delta);
+            _altView = _altView.Shift(delta);
 
             return CurrentState();
         }
@@ -74,38 +68,36 @@ namespace Core
         {
             if (!CanZoom(inside)) return CurrentState();
 
-            var altView = new Square(_zoom, _altLeftX, _altBottomY);
+            var currentZoom = _altView.Size;
 
-            var altResult = ZoomView(_zoom, inside, ref altView, _planets.AltShow, _planets.AltHide);
-            _altLeftX = altResult.LeftX;
-            _altBottomY = altResult.BottomY;
+            _altView = ZoomView(ref _altView, inside, _planets.AltShow, _planets.AltHide);
 
-            var targetZoom = _zoom + (inside ? -1 : 1);
-            if (!inside && _zoom < _conf.AlternativeViewThreshold - 1 ||
-                inside && _zoom < _conf.AlternativeViewThreshold)
+            var affectsRegularView = (inside && currentZoom < _conf.AlternativeViewThreshold) ||
+                                     (!inside && currentZoom < _conf.AlternativeViewThreshold - 1);
+
+            if (affectsRegularView)
             {
-                var regView = new Square(Math.Min(_conf.AlternativeViewThreshold - 1, _zoom), _leftX, _bottomY);
-
-                var result = ZoomView(_zoom, inside, ref regView, _planets.Show, _planets.Hide);
-                _leftX = result.LeftX;
-                _bottomY = result.BottomY;
+                _regView = ZoomView(ref _regView, inside, _planets.Show, _planets.Hide);
             }
-
-            _zoom = targetZoom;
 
             return CurrentState();
         }
 
-        //Even sides are top and right
-        //Odd sides are bottom and left
+        /// <summary>
+        /// Zooms a target view square.
+        /// Even zoom values are responsible for top-right outlines of a target view square.
+        /// Odd zoom values are responsible for left-bottom outlines of a target view square.
+        /// For a selected outline - performs hideAction/showValue based on inside value.
+        /// inside == true -> hide
+        /// inside == false -> show
+        /// </summary>
         private Square ZoomView(
-            int zoom,
-            bool inside,
             ref Square view,
+            bool inside,
             IPlanetAction showAction,
             IPlanetAction hideAction)
         {
-            var targetZoom = zoom + (inside ? 0 : 1);
+            var targetZoom = view.Size + (inside ? 0 : 1);
 
             var sideOffset = targetZoom % 2 == 0 ? view.Size : 0;
             var zoomOffset = targetZoom % 2 == 0 ? (inside ? -1 : 0) : (inside ? 0 : -1);
@@ -129,24 +121,25 @@ namespace Core
             );
         }
 
-
         private bool CanZoom(bool inside)
         {
-            var delta = inside ? -1 : 1;
+            var nextZoom = _altView.Size + (inside ? -1 : 1);
 
-            return _conf.MinZoom <= (_zoom + delta) && (_zoom + delta) <= _conf.MaxZoom;
+            return _conf.MinZoom <= nextZoom && nextZoom <= _conf.MaxZoom;
         }
 
         private State CurrentState()
         {
-            var observablePlanets = IsRegularView
+            var isRegularView = _altView.Size < _conf.AlternativeViewThreshold;
+
+            var observablePlanets = isRegularView
                 ? _planets.GetObservablePlanets()
                 : _planets.GetAltObservablePlanets();
 
             return new State(
-                _zoom,
+                _altView.Size,
                 _playerRating,
-                IsRegularView,
+                isRegularView,
                 _playerPosition,
                 observablePlanets
             );

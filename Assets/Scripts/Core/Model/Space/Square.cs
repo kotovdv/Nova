@@ -12,5 +12,10 @@ namespace Core.Model.Space
             LeftX = leftX;
             BottomY = bottomY;
         }
+
+        public Square Shift(Position delta)
+        {
+            return new Square(Size, LeftX + delta.X, BottomY + delta.Y);
+        }
     }
 }
