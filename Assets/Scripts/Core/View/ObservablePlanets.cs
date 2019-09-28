@@ -13,6 +13,13 @@ namespace Core.View
         private readonly ReadOnlyDictionary<Position, Planet> _readOnlyObservable;
         private readonly ReadOnlyDictionary<Position, Planet> _readOnlyAltObservable;
 
+        public readonly IPlanetAction Show;
+        public readonly IPlanetAction Hide;
+        public readonly IPlanetAction AltShow;
+        public readonly IPlanetAction AltHide;
+        public readonly IPlanetAction CompositeShow;
+        public readonly IPlanetAction CompositeHIde;
+
         public ObservablePlanets(SpaceGrid spaceGrid, int altViewCapacity, int playerRating)
         {
             _spaceGrid = spaceGrid;
@@ -21,6 +28,13 @@ namespace Core.View
             _readOnlyObservable = new ReadOnlyDictionary<Position, Planet>(_observable);
             _readOnlyAltObservable = new ReadOnlyDictionary<Position, Planet>(_altObservable);
             _altObservableSet = new AltObservableSet(altViewCapacity, playerRating);
+            
+            Show = new ShowAction(this);
+            Hide = new HideAction(this);
+            AltShow = new AltShowAction(this);
+            AltHide = new AltHideAction(this);
+            CompositeShow = new CompositePlanetAction(this, new[] {Show, AltShow});
+            CompositeHIde = new CompositePlanetAction(this, new[] {Hide, AltHide});
         }
 
         public ReadOnlyDictionary<Position, Planet> GetObservablePlanets()
@@ -41,41 +55,74 @@ namespace Core.View
             return _readOnlyAltObservable;
         }
 
-        public void CombinedShow(Position position, Planet planet)
+        private abstract class PlanetAction : IPlanetAction
         {
-            Show(position, planet);
-            AltShow(position, planet);
+            protected readonly ObservablePlanets Planets;
+
+            protected PlanetAction(ObservablePlanets planets)
+            {
+                Planets = planets;
+            }
+
+            public abstract void Invoke(Position position, Planet planet);
         }
 
-        public void CombinedHide(Position position, Planet planet)
+        private class CompositePlanetAction : PlanetAction
         {
-            Hide(position);
-            AltHide(position, planet);
+            private readonly IPlanetAction[] _actions;
+
+            public CompositePlanetAction(ObservablePlanets planets, IPlanetAction[] actions) : base(planets)
+            {
+                _actions = actions;
+            }
+
+            public override void Invoke(Position position, Planet planet)
+            {
+                for (var i = 0; i < _actions.Length; i++)
+                {
+                    _actions[i].Invoke(position, planet);
+                }
+            }
         }
 
-        public void Show(Position position, Planet planet)
+        private class ShowAction : PlanetAction
         {
-            _observable[position] = planet;
+            public ShowAction(ObservablePlanets planets) : base(planets) { }
+
+            public override void Invoke(Position position, Planet planet)
+            {
+                Planets._observable[position] = planet;
+            }
         }
 
-        public void AltShow(Position position, Planet planet)
+        private class HideAction : PlanetAction
         {
-            _altObservableSet.Add(position, planet.Rating);
+            public HideAction(ObservablePlanets planets) : base(planets) { }
+
+            public override void Invoke(Position position, Planet planet)
+            {
+                Planets._observable.Remove(position);
+            }
         }
 
-        public void Hide(Position position)
+        private class AltShowAction : PlanetAction
         {
-            _observable.Remove(position);
+            public AltShowAction(ObservablePlanets planets) : base(planets) { }
+
+            public override void Invoke(Position position, Planet planet)
+            {
+                Planets._altObservableSet.Add(position, planet.Rating);
+            }
         }
 
-        public void Hide(Position position, Planet planet)
+        private class AltHideAction : PlanetAction
         {
-            Hide(position);
-        }
+            public AltHideAction(ObservablePlanets planets) : base(planets) { }
 
-        public void AltHide(Position position, Planet planet)
-        {
-            _altObservableSet.Remove(position, planet.Rating);
+            public override void Invoke(Position position, Planet planet)
+            {
+                Planets._altObservableSet.Remove(position, planet.Rating);
+            }
         }
     }
 }

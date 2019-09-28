@@ -31,7 +31,7 @@ namespace Core.Model.Space
             return optional.Value;
         }
 
-        private Planet? TryGetPlanet(Position position)
+        public Planet? TryGetPlanet(Position position)
         {
             var targetPosition = _navigator.Find(position);
             var gridPosition = targetPosition.GridPosition;
@@ -66,7 +66,7 @@ namespace Core.Model.Space
         /// <param name="side">Which side of a square is being traversed (vertical or horizontal).</param>
         /// <param name="action">Action that will be performed on all elements during traversal.</param>
         /// <param name="offset">Offset from leftX, bottomY in X for vertical side and Y for horizontal side.</param>
-        public void Traverse(Square square, Side side, Action<Position, Planet> action, int offset = 0)
+        public void Traverse(Square square, Side side, IPlanetAction action, int offset = 0)
         {
             var initialX = square.LeftX + (side == Side.Vertical ? offset : 0);
             var initialY = square.BottomY + (side == Side.Horizontal ? offset : 0);
@@ -86,69 +86,18 @@ namespace Core.Model.Space
             }
         }
 
-        public void TraverseBottomToLeft(int leftX, int bottomY, int length, Action<Position, Planet> action)
-        {
-            Traverse(leftX, bottomY, length, length, Direction.Left, action);
-            Traverse(leftX - 1, bottomY, length + 1, length, Direction.Down, action);
-        }
-
-        public void TraverseTopToRight(int leftX, int bottomY, int length, Action<Position, Planet> action)
-        {
-            Traverse(leftX, bottomY, length + 1, length, Direction.Up, action);
-            Traverse(leftX, bottomY, length, Direction.Right, action);
-        }
-
-        private void Traverse(int leftX, int bottomY, int sizeX, int sizeY, Direction direction,
-            Action<Position, Planet> action)
-        {
-            switch (direction)
-            {
-                case Direction.Left:
-                    TraverseVertical(bottomY, bottomY + sizeY, leftX - 1, action);
-                    break;
-                case Direction.Right:
-                    TraverseVertical(bottomY, bottomY + sizeY, leftX + sizeX, action);
-                    break;
-                case Direction.Up:
-                    TraverseHorizontal(leftX, leftX + sizeX, bottomY + sizeY, action);
-                    break;
-                case Direction.Down:
-                    TraverseHorizontal(leftX, leftX + sizeX, bottomY - 1, action);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-            }
-        }
-
-        private void Traverse(int leftX, int bottomY, int size, Direction direction, Action<Position, Planet> action)
-        {
-            Traverse(leftX, bottomY, size, size, direction, action);
-        }
-
-        public void Traverse(int fromX, int toX, int fromY, int toY, Action<Position, Planet> action)
+        public void Traverse(int fromX, int toX, int fromY, int toY, IPlanetAction action)
         {
             for (var x = fromX; x < toX; x++)
+            for (var y = fromY; y < toY; y++)
             {
-                for (var y = fromY; y < toY; y++)
-                {
-                    var position = new Position(x, y);
+                var position = new Position(x, y);
 
-                    var optPlanet = TryGetPlanet(position);
-                    if (!optPlanet.HasValue) continue;
+                var optPlanet = TryGetPlanet(position);
+                if (!optPlanet.HasValue) continue;
 
-                    action.Invoke(position, optPlanet.Value);
-                }
+                action.Invoke(position, optPlanet.Value);
             }
-        }
-
-        private void TraverseVertical(int fromY, int toY, int x, Action<Position, Planet> action)
-        {
-            Traverse(x, x + 1, fromY, toY, action);
-        }
-
-        private void TraverseHorizontal(int fromX, int toX, int y, Action<Position, Planet> action)
-        {
-            Traverse(fromX, toX, y, y + 1, action);
         }
     }
 }

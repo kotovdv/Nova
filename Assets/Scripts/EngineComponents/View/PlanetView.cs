@@ -12,7 +12,7 @@ namespace EngineComponents.View
         public void Init(Vector3 position, Planet planet)
         {
             gameObject.SetActive(true);
-            spriteRenderer.color = planet.Color.GetUnityEngineColor();
+            spriteRenderer.color = planet.Color.ToUnityEngineColor();
             ratingTextMesh.text = planet.Rating.ToString();
             planetTransform.position = position;
         }

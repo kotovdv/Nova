@@ -41,7 +41,7 @@ namespace Core
             _altLeftX = _leftX;
             _altBottomY = _bottomY;
 
-            _spaceGrid.Traverse(_leftX, _leftX + _zoom, _bottomY, _bottomY + _zoom, _planets.CombinedShow);
+            _spaceGrid.Traverse(_leftX, _leftX + _zoom, _bottomY, _bottomY + _zoom, _planets.CompositeShow);
 
             return CurrentState();
         }
@@ -55,23 +55,11 @@ namespace Core
             var posDelta = direction.ToPositionDelta();
             var offset = Math.Min(posDelta.X + posDelta.Y, 0);
 
-            if (direction == Direction.Left || direction == Direction.Down)
-            {
-                _spaceGrid.Traverse(regView, side, _planets.Show, offset);
-                _spaceGrid.Traverse(regView, side, _planets.Hide, offset + regView.Size);
+            _spaceGrid.Traverse(regView, side, offset < 0 ? _planets.Show : _planets.Hide, offset);
+            _spaceGrid.Traverse(regView, side, offset < 0 ? _planets.Hide : _planets.Show, offset + regView.Size);
 
-                _spaceGrid.Traverse(altView, side, _planets.AltShow, offset);
-                _spaceGrid.Traverse(altView, side, _planets.AltHide, offset + altView.Size);
-            }
-            else
-            {
-                _spaceGrid.Traverse(regView, side, _planets.Hide, offset);
-                _spaceGrid.Traverse(regView, side, _planets.Show, offset + regView.Size);
-
-                _spaceGrid.Traverse(altView, side, _planets.AltHide, offset);
-                _spaceGrid.Traverse(altView, side, _planets.AltShow, offset + altView.Size);
-            }
-
+            _spaceGrid.Traverse(altView, side, offset < 0 ? _planets.AltShow : _planets.AltHide, offset);
+            _spaceGrid.Traverse(altView, side, offset < 0 ? _planets.AltHide : _planets.AltShow, offset + altView.Size);
 
             _leftX += posDelta.X;
             _bottomY += posDelta.Y;
@@ -86,49 +74,59 @@ namespace Core
         {
             if (!CanZoom(inside)) return CurrentState();
 
-            _zoom += inside ? -1 : 1;
-            var isAltView = _zoom >= _conf.AlternativeViewThreshold;
+            var altView = new Square(_zoom, _altLeftX, _altBottomY);
 
-            var action = inside
-                ? (isAltView ? (Action<Position, Planet>) _planets.AltHide : _planets.CombinedHide)
-                : (isAltView ? (Action<Position, Planet>) _planets.AltShow : _planets.CombinedShow);
+            var altResult = ZoomView(_zoom, inside, ref altView, _planets.AltShow, _planets.AltHide);
+            _altLeftX = altResult.LeftX;
+            _altBottomY = altResult.BottomY;
 
-            if ((_zoom + (inside ? 1 : 0)) % 2 == 0)
+            var targetZoom = _zoom + (inside ? -1 : 1);
+            if (!inside && _zoom < _conf.AlternativeViewThreshold - 1 ||
+                inside && _zoom < _conf.AlternativeViewThreshold)
             {
-                var zoomOffset = !inside ? -1 : 0;
+                var regView = new Square(Math.Min(_conf.AlternativeViewThreshold - 1, _zoom), _leftX, _bottomY);
 
-                _spaceGrid.TraverseTopToRight(
-                    isAltView ? _altLeftX : _leftX,
-                    isAltView ? _altBottomY : _bottomY,
-                    _zoom + zoomOffset,
-                    action
-                );
-            }
-            else
-            {
-                var offset = (inside ? 1 : 0);
-                var zoomOffset = !inside ? -1 : 0;
-
-                _spaceGrid.TraverseBottomToLeft(
-                    (isAltView ? _altLeftX : _leftX) + offset,
-                    (isAltView ? _altBottomY : _bottomY) + offset,
-                    _zoom + zoomOffset,
-                    action
-                );
-
-                var delta = inside ? 1 : -1;
-
-                _altLeftX += delta;
-                _altBottomY += delta;
-                if (IsRegularView)
-                {
-                    _leftX += delta;
-                    _bottomY += delta;
-                }
+                var result = ZoomView(_zoom, inside, ref regView, _planets.Show, _planets.Hide);
+                _leftX = result.LeftX;
+                _bottomY = result.BottomY;
             }
 
+            _zoom = targetZoom;
 
             return CurrentState();
+        }
+
+        //Even sides are top and right
+        //Odd sides are bottom and left
+        private Square ZoomView(
+            int zoom,
+            bool inside,
+            ref Square view,
+            IPlanetAction showAction,
+            IPlanetAction hideAction)
+        {
+            var targetZoom = zoom + (inside ? 0 : 1);
+
+            var sideOffset = targetZoom % 2 == 0 ? view.Size : 0;
+            var zoomOffset = targetZoom % 2 == 0 ? (inside ? -1 : 0) : (inside ? 0 : -1);
+            var totalOffset = sideOffset + zoomOffset;
+
+            var action = inside ? hideAction : showAction;
+            var corner = new Position(view.LeftX + totalOffset, view.BottomY + totalOffset);
+
+            var cornerPlanet = _spaceGrid.TryGetPlanet(corner);
+            if (cornerPlanet != null) action.Invoke(corner, cornerPlanet.Value);
+            _spaceGrid.Traverse(view, Side.Vertical, action, totalOffset);
+            _spaceGrid.Traverse(view, Side.Horizontal, action, totalOffset);
+
+            var viewSideOffset = inside ? -1 : 1;
+            var viewPositionOffset = targetZoom % 2 != 0 ? (inside ? 1 : -1) : 0;
+
+            return new Square(
+                view.Size + viewSideOffset,
+                view.LeftX + viewPositionOffset,
+                view.BottomY + viewPositionOffset
+            );
         }
 
 

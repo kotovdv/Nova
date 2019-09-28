@@ -1,5 +1,3 @@
-using System.Runtime.Remoting.Messaging;
-
 namespace Core.Model.Space
 {
     public readonly struct Color
@@ -15,7 +13,7 @@ namespace Core.Model.Space
             _b = b;
         }
 
-        public UnityEngine.Color GetUnityEngineColor()
+        public UnityEngine.Color ToUnityEngineColor()
         {
             return new UnityEngine.Color(_r / 255F, _g / 255F, _b / 255F);
         }
