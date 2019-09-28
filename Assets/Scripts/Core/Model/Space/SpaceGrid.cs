@@ -42,9 +42,48 @@ namespace Core.Model.Space
             return tile[tilePos.X, tilePos.Y];
         }
 
-        public void Traverse(int leftX, int bottomY, int size, Direction direction, Action<Position, Planet> action)
+        /// <summary>
+        /// Executes given action for each element at target location.
+        /// Target location is determined via combination of square, side and offset.
+        /// For example
+        /// Square = (leftX = 0, bottomY = 0, size = 10)
+        /// Side = Vertical
+        /// Offset = 0
+        /// Will result in
+        /// Traversing all elements from
+        /// (0,0)
+        /// (0,1)
+        /// ...
+        /// (0,9)
+        /// Changing offset to 1 will result in
+        /// (1,0)
+        /// (1,1)
+        /// ...
+        /// (1,9)
+        /// being traversed.
+        /// </summary>
+        /// <param name="square">Information about a square from the grid.</param>
+        /// <param name="side">Which side of a square is being traversed (vertical or horizontal).</param>
+        /// <param name="action">Action that will be performed on all elements during traversal.</param>
+        /// <param name="offset">Offset from leftX, bottomY in X for vertical side and Y for horizontal side.</param>
+        public void Traverse(Square square, Side side, Action<Position, Planet> action, int offset = 0)
         {
-            Traverse(leftX, bottomY, size, size, direction, action);
+            var initialX = square.LeftX + (side == Side.Vertical ? offset : 0);
+            var initialY = square.BottomY + (side == Side.Horizontal ? offset : 0);
+
+            var finalX = (side == Side.Horizontal) ? initialX + square.Size : initialX + 1;
+            var finalY = (side == Side.Vertical) ? initialY + square.Size : initialY + 1;
+
+            for (var x = initialX; x < finalX; x++)
+            for (var y = initialY; y < finalY; y++)
+            {
+                var position = new Position(x, y);
+
+                var optPlanet = TryGetPlanet(position);
+                if (!optPlanet.HasValue) continue;
+
+                action.Invoke(position, optPlanet.Value);
+            }
         }
 
         public void TraverseBottomToLeft(int leftX, int bottomY, int length, Action<Position, Planet> action)
@@ -59,7 +98,7 @@ namespace Core.Model.Space
             Traverse(leftX, bottomY, length, Direction.Right, action);
         }
 
-        public void Traverse(int leftX, int bottomY, int sizeX, int sizeY, Direction direction,
+        private void Traverse(int leftX, int bottomY, int sizeX, int sizeY, Direction direction,
             Action<Position, Planet> action)
         {
             switch (direction)
@@ -79,6 +118,11 @@ namespace Core.Model.Space
                 default:
                     throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
+        }
+
+        private void Traverse(int leftX, int bottomY, int size, Direction direction, Action<Position, Planet> action)
+        {
+            Traverse(leftX, bottomY, size, size, direction, action);
         }
 
         public void Traverse(int fromX, int toX, int fromY, int toY, Action<Position, Planet> action)

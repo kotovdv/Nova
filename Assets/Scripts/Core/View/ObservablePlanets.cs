@@ -68,6 +68,11 @@ namespace Core.View
             _observable.Remove(position);
         }
 
+        public void Hide(Position position, Planet planet)
+        {
+            Hide(position);
+        }
+
         public void AltHide(Position position, Planet planet)
         {
             _altObservableSet.Remove(position, planet.Rating);

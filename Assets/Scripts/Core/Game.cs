@@ -15,7 +15,7 @@ namespace Core
         private int _leftX, _altLeftX;
         private int _bottomY, _altBottomY;
         private Position _playerPosition;
-        private readonly ObservablePlanets _observablePlanets;
+        private readonly ObservablePlanets _planets;
         private bool IsRegularView => _zoom < _conf.AlternativeViewThreshold;
 
         public Game(
@@ -28,7 +28,7 @@ namespace Core
             _spaceGrid = spaceGrid;
             _playerRating = playerRating;
             _playerPosition = playerPosition;
-            _observablePlanets = new ObservablePlanets(_spaceGrid, _conf.AlternativeViewCapacity, _playerRating);
+            _planets = new ObservablePlanets(_spaceGrid, _conf.AlternativeViewCapacity, _playerRating);
         }
 
         public State Init()
@@ -41,29 +41,43 @@ namespace Core
             _altLeftX = _leftX;
             _altBottomY = _bottomY;
 
-            _spaceGrid.Traverse(_leftX, _leftX + _zoom, _bottomY, _bottomY + _zoom, _observablePlanets.CombinedShow);
+            _spaceGrid.Traverse(_leftX, _leftX + _zoom, _bottomY, _bottomY + _zoom, _planets.CombinedShow);
 
             return CurrentState();
         }
 
         public State Move(Direction direction)
         {
-            var delta = direction.ToPosition();
-            _playerPosition += delta;
+            var altView = new Square(_zoom, _altLeftX, _altBottomY);
+            var regView = new Square(Math.Min(_conf.AlternativeViewThreshold - 1, _zoom), _leftX, _bottomY);
 
-            var altViewSize = _zoom;
-            _spaceGrid.Traverse(_altLeftX, _altBottomY, altViewSize, direction, _observablePlanets.AltShow);
-            _spaceGrid.Traverse(_altLeftX + delta.X, _altBottomY + delta.Y, altViewSize, direction.ToOpposite(),
-                _observablePlanets.AltHide);
-            _altLeftX += delta.X;
-            _altBottomY += delta.Y;
+            var side = direction.ToSide();
+            var posDelta = direction.ToPositionDelta();
+            var offset = Math.Min(posDelta.X + posDelta.Y, 0);
 
-            var regularViewSize = Math.Min(_conf.AlternativeViewThreshold - 1, _zoom);
-            _spaceGrid.Traverse(_leftX, _bottomY, regularViewSize, direction, _observablePlanets.Show);
-            _spaceGrid.Traverse(_leftX + delta.X, _bottomY + delta.Y, regularViewSize, direction.ToOpposite(),
-                (position, planet) => _observablePlanets.Hide(position));
-            _leftX += delta.X;
-            _bottomY += delta.Y;
+            if (direction == Direction.Left || direction == Direction.Down)
+            {
+                _spaceGrid.Traverse(regView, side, _planets.Show, offset);
+                _spaceGrid.Traverse(regView, side, _planets.Hide, offset + regView.Size);
+
+                _spaceGrid.Traverse(altView, side, _planets.AltShow, offset);
+                _spaceGrid.Traverse(altView, side, _planets.AltHide, offset + altView.Size);
+            }
+            else
+            {
+                _spaceGrid.Traverse(regView, side, _planets.Hide, offset);
+                _spaceGrid.Traverse(regView, side, _planets.Show, offset + regView.Size);
+
+                _spaceGrid.Traverse(altView, side, _planets.AltHide, offset);
+                _spaceGrid.Traverse(altView, side, _planets.AltShow, offset + altView.Size);
+            }
+
+
+            _leftX += posDelta.X;
+            _bottomY += posDelta.Y;
+            _altLeftX += posDelta.X;
+            _altBottomY += posDelta.Y;
+            _playerPosition += posDelta;
 
             return CurrentState();
         }
@@ -76,8 +90,8 @@ namespace Core
             var isAltView = _zoom >= _conf.AlternativeViewThreshold;
 
             var action = inside
-                ? (isAltView ? (Action<Position, Planet>) _observablePlanets.AltHide : _observablePlanets.CombinedHide)
-                : (isAltView ? (Action<Position, Planet>) _observablePlanets.AltShow : _observablePlanets.CombinedShow);
+                ? (isAltView ? (Action<Position, Planet>) _planets.AltHide : _planets.CombinedHide)
+                : (isAltView ? (Action<Position, Planet>) _planets.AltShow : _planets.CombinedShow);
 
             if ((_zoom + (inside ? 1 : 0)) % 2 == 0)
             {
@@ -128,8 +142,8 @@ namespace Core
         private State CurrentState()
         {
             var observablePlanets = IsRegularView
-                ? _observablePlanets.GetObservablePlanets()
-                : _observablePlanets.GetAltObservablePlanets();
+                ? _planets.GetObservablePlanets()
+                : _planets.GetAltObservablePlanets();
 
             return new State(
                 _zoom,
