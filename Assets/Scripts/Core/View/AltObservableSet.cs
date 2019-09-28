@@ -26,7 +26,13 @@ namespace Core.View
         {
             var ratingDiff = CreateRatingDiff(position, planetRating);
 
-            var set = _storage.GetOrCompute(ratingDiff, () => new HashSet<Position>());
+            var set = _storage.GetOrDefault(ratingDiff);
+            if (set == null)
+            {
+                set = new HashSet<Position>();
+                _storage[ratingDiff] = set;
+            }
+
             set.Add(position);
         }
 

@@ -25,12 +25,11 @@ namespace Core.Configuration
             var grid = new SpaceGrid(conf.TileSize, tileProvider);
             var game = new Game(
                 playerRating,
-                playerPosition,
                 grid,
                 conf
             );
 
-            var initialState = game.Init();
+            var initialState = game.Init(playerPosition);
 
             return (game, initialState);
         }

@@ -9,32 +9,27 @@ namespace Core
     {
         private readonly int _playerRating;
         private readonly SpaceGrid _spaceGrid;
+        private readonly PlayerTracker _tracker;
         private readonly GameConfiguration _conf;
-
-        private Square _altView;
-        private Square _regView;
-        private Position _playerPosition;
         private readonly ObservablePlanets _planets;
 
         public Game(
             int playerRating,
-            Position playerPosition,
             SpaceGrid spaceGrid,
             GameConfiguration conf)
         {
             _conf = conf;
             _spaceGrid = spaceGrid;
             _playerRating = playerRating;
-            _playerPosition = playerPosition;
+            _tracker = new PlayerTracker(conf.TileSize, spaceGrid);
             _planets = new ObservablePlanets(_spaceGrid, _conf.AlternativeViewCapacity, _playerRating);
         }
 
-        public State Init()
+        public State Init(Position playerPosition)
         {
             var offset = _conf.MinZoom / 2;
-            var square = new Square(_conf.MinZoom, _playerPosition.X - offset, _playerPosition.Y - offset);
-            _regView = square;
-            _altView = square;
+            var square = new Square(_conf.MinZoom, playerPosition.X - offset, playerPosition.Y - offset);
+            _tracker.Init(square, square, playerPosition);
             _spaceGrid.Traverse(square, _planets.CompositeShow);
 
             return CurrentState();
@@ -50,16 +45,18 @@ namespace Core
             var delta = direction.ToPositionDelta();
             var offset = Math.Min(delta.X + delta.Y, 0);
 
-            _spaceGrid.Traverse(_regView, side, offset < 0 ? _planets.Show : _planets.Hide, offset);
-            _spaceGrid.Traverse(_regView, side, offset < 0 ? _planets.Hide : _planets.Show, offset + _regView.Size);
+            var regView = _tracker.RegView;
+            var altView = _tracker.AltView;
+            _spaceGrid.Traverse(regView, side, offset < 0 ? _planets.Show : _planets.Hide, offset);
+            _spaceGrid.Traverse(regView, side, offset < 0 ? _planets.Hide : _planets.Show, offset + regView.Size);
 
-            _spaceGrid.Traverse(_altView, side, offset < 0 ? _planets.AltShow : _planets.AltHide, offset);
-            _spaceGrid.Traverse(_altView, side, offset < 0 ? _planets.AltHide : _planets.AltShow,
-                offset + _altView.Size);
+            _spaceGrid.Traverse(altView, side, offset < 0 ? _planets.AltShow : _planets.AltHide, offset);
+            _spaceGrid.Traverse(altView, side, offset < 0 ? _planets.AltHide : _planets.AltShow,
+                offset + altView.Size);
 
-            _playerPosition += delta;
-            _regView = _regView.Shift(delta);
-            _altView = _altView.Shift(delta);
+            _tracker.UpdateAltView(altView.Shift(delta));
+            _tracker.UpdateRegView(regView.Shift(delta));
+            _tracker.UpdatePlayerPosition(_tracker.PlayerPosition + delta);
 
             return CurrentState();
         }
@@ -68,16 +65,20 @@ namespace Core
         {
             if (!CanZoom(inside)) return CurrentState();
 
-            var currentZoom = _altView.Size;
+            var altView = _tracker.AltView;
+            var currentZoom = altView.Size;
 
-            _altView = ZoomView(ref _altView, inside, _planets.AltShow, _planets.AltHide);
+            var newAltView = ZoomView(ref altView, inside, _planets.AltShow, _planets.AltHide);
+            _tracker.UpdateAltView(newAltView);
 
             var affectsRegularView = (inside && currentZoom < _conf.AlternativeViewThreshold) ||
                                      (!inside && currentZoom < _conf.AlternativeViewThreshold - 1);
 
             if (affectsRegularView)
             {
-                _regView = ZoomView(ref _regView, inside, _planets.Show, _planets.Hide);
+                var regView = _tracker.RegView;
+                var newRegView = ZoomView(ref regView, inside, _planets.Show, _planets.Hide);
+                _tracker.UpdateRegView(newRegView);
             }
 
             return CurrentState();
@@ -123,24 +124,25 @@ namespace Core
 
         private bool CanZoom(bool inside)
         {
-            var nextZoom = _altView.Size + (inside ? -1 : 1);
+            var nextZoom = _tracker.AltView.Size + (inside ? -1 : 1);
 
             return _conf.MinZoom <= nextZoom && nextZoom <= _conf.MaxZoom;
         }
 
         private State CurrentState()
         {
-            var isRegularView = _altView.Size < _conf.AlternativeViewThreshold;
+            var altView = _tracker.AltView;
+            var isRegularView = altView.Size < _conf.AlternativeViewThreshold;
 
             var observablePlanets = isRegularView
                 ? _planets.GetObservablePlanets()
                 : _planets.GetAltObservablePlanets();
 
             return new State(
-                _altView.Size,
+                altView.Size,
                 _playerRating,
                 isRegularView,
-                _playerPosition,
+                _tracker.PlayerPosition,
                 observablePlanets
             );
         }
