@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Core.Model.Game;
-using Core.Model.Space;
 using Core.Util;
 using UnityEngine;
-using Color = Core.Model.Space.Color;
 using Random = System.Random;
 
-namespace Core.Configuration
+namespace Core.Model.Space.Grid
 {
-    public class SpaceTileProvider : ISpaceTileProvider
+    public class SpaceTileFactory
     {
         private readonly int _tileSize;
         private readonly int _playerRating;
@@ -18,11 +16,11 @@ namespace Core.Configuration
         private readonly int _planetMaxRating;
         private readonly int _closestToPlayerStorageSize;
 
-        public static SpaceTileProvider Construct(int playerRating, GameConfiguration conf)
+        public static SpaceTileFactory Construct(int playerRating, GameConfiguration conf)
         {
             var planetsPerTile = Mathf.CeilToInt(conf.Density * (conf.TileSize * conf.TileSize));
 
-            return new SpaceTileProvider(
+            return new SpaceTileFactory(
                 playerRating,
                 planetsPerTile,
                 conf.TileSize,
@@ -32,7 +30,7 @@ namespace Core.Configuration
             );
         }
 
-        public SpaceTileProvider(
+        public SpaceTileFactory(
             int playerRating,
             int planetsPerTile,
             int tileSize,
@@ -48,9 +46,9 @@ namespace Core.Configuration
             _closestToPlayerStorageSize = closestToPlayerStorageSize;
         }
 
-        public SpaceTile Take()
+        public SpaceTile CreateTile()
         {
-            var storage = new Planet?[_tileSize, _tileSize];
+            var storage = new Planet?[_tileSize][];
             var closestToPlayerStorage = new Position[_closestToPlayerStorageSize];
 
             var rnd = ThreadLocalRandom.Current();
@@ -61,30 +59,33 @@ namespace Core.Configuration
             return new SpaceTile(storage, closestToPlayerStorage);
         }
 
-        private void PopulateTile(Planet?[,] storage, Random rnd)
+        private void PopulateTile(Planet?[][] storage, Random rnd)
         {
             var currentCount = 0;
             for (var i = 0; i < _tileSize; i++)
-            for (var j = 0; j < _tileSize; j++)
             {
-                if (currentCount == _planetsPerTile) break;
+                storage[i] = new Planet?[_tileSize];
+                for (var j = 0; j < _tileSize; j++)
+                {
+                    if (currentCount == _planetsPerTile) break;
 
-                var planetRating = rnd.Next(_planetMinRating, _planetMaxRating);
+                    var planetRating = rnd.Next(_planetMinRating, _planetMaxRating);
 
-                var r = (byte) rnd.Next(256);
-                var g = (byte) rnd.Next(256);
-                var b = (byte) rnd.Next(256);
+                    var r = (byte) rnd.Next(256);
+                    var g = (byte) rnd.Next(256);
+                    var b = (byte) rnd.Next(256);
 
-                var color = new Color(r, g, b);
+                    var color = new Color(r, g, b);
 
-                var planet = new Planet(planetRating, color);
-                storage[i, j] = planet;
+                    var planet = new Planet(planetRating, color);
+                    storage[i][j] = planet;
 
-                currentCount++;
+                    currentCount++;
+                }
             }
         }
 
-        private void ShuffleTile(Planet?[,] storage, Random rnd)
+        private void ShuffleTile(Planet?[][] storage, Random rnd)
         {
             for (var i = storage.Length - 1; i > 0; i--)
             {
@@ -95,20 +96,20 @@ namespace Core.Configuration
                 var j0 = j / _tileSize;
                 var j1 = j % _tileSize;
 
-                var temp = storage[i0, i1];
-                storage[i0, i1] = storage[j0, j1];
-                storage[j0, j1] = temp;
+                var temp = storage[i0][i1];
+                storage[i0][i1] = storage[j0][j1];
+                storage[j0][j1] = temp;
             }
         }
 
-        private void PopulateClosestPlanetsByRating(Planet?[,] storage, Position[] closestToPlayerStorage)
+        private void PopulateClosestPlanetsByRating(Planet?[][] storage, Position[] closestToPlayerStorage)
         {
             var temp = new List<RatingDiff>(_planetsPerTile);
 
             for (var i = 0; i < _tileSize; i++)
             for (var j = 0; j < _tileSize; j++)
             {
-                var optionalPlanet = storage[i, j];
+                var optionalPlanet = storage[i][j];
                 if (!optionalPlanet.HasValue) continue;
                 var planet = optionalPlanet.Value;
 

@@ -1,22 +1,18 @@
 using System;
-using System.Collections.Generic;
-using Core.Configuration;
-using Core.Util;
 
-namespace Core.Model.Space
+namespace Core.Model.Space.Grid
 {
     public class SpaceGrid
     {
-        private readonly int _tileSize;
-        private readonly ISpaceTileProvider _tileProvider;
         private readonly SpaceGridNavigator _navigator;
-        private readonly IDictionary<Position, SpaceTile> _grid = new Dictionary<Position, SpaceTile>();
+        private readonly SpaceGridTileCache _spaceGridTileCache;
 
-        public SpaceGrid(int tileSize, ISpaceTileProvider tileProvider)
+        public SpaceGrid(
+            SpaceGridNavigator navigator,
+            SpaceGridTileCache spaceGridTileCache)
         {
-            _tileSize = tileSize;
-            _tileProvider = tileProvider;
-            _navigator = new SpaceGridNavigator(tileSize);
+            _navigator = navigator;
+            _spaceGridTileCache = spaceGridTileCache;
         }
 
         public Planet GetPlanet(Position position)
@@ -33,10 +29,10 @@ namespace Core.Model.Space
         public Planet? TryGetPlanet(Position position)
         {
             var targetPosition = _navigator.Find(position);
-            var gridPosition = targetPosition.GridPosition;
-            var tilePos = targetPosition.TilePosition;
+            var gridPosition = targetPosition.InGridPosition;
+            var tilePos = targetPosition.InTilePosition;
 
-            var tile = _grid.GetOrCompute(gridPosition, () => _tileProvider.Take());
+            var tile = _spaceGridTileCache.Get(gridPosition);
 
             return tile[tilePos.X, tilePos.Y];
         }

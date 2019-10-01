@@ -1,4 +1,5 @@
 ﻿using Core.Model.Space;
+using Core.Model.Space.Grid;
 using NUnit.Framework;
 
 namespace Tests
@@ -12,71 +13,71 @@ namespace Tests
         public void ZeroPosition()
         {
             var result = _navigator.Find(new Position(0, 0));
-            Assert.AreEqual(new Position(1, 1), result.GridPosition);
-            Assert.AreEqual(new Position(0, 0), result.TilePosition);
+            Assert.AreEqual(new Position(1, 1), result.InGridPosition);
+            Assert.AreEqual(new Position(0, 0), result.InTilePosition);
         }
 
         [Test]
         public void NonZeroPositivePositionInFirstTile()
         {
             var result = _navigator.Find(new Position(90, 90));
-            Assert.AreEqual(new Position(1, 1), result.GridPosition);
-            Assert.AreEqual(new Position(90, 90), result.TilePosition);
+            Assert.AreEqual(new Position(1, 1), result.InGridPosition);
+            Assert.AreEqual(new Position(90, 90), result.InTilePosition);
         }
 
         [Test]
         public void PriorToTileSizePositivePosition()
         {
             var result1 = _navigator.Find(new Position(99, 99));
-            Assert.AreEqual(new Position(1, 1), result1.GridPosition);
-            Assert.AreEqual(new Position(99, 99), result1.TilePosition);
+            Assert.AreEqual(new Position(1, 1), result1.InGridPosition);
+            Assert.AreEqual(new Position(99, 99), result1.InTilePosition);
         }
 
         [Test]
         public void TileSizePositivePosition()
         {
             var result = _navigator.Find(new Position(100, 100));
-            Assert.AreEqual(new Position(2, 2), result.GridPosition);
-            Assert.AreEqual(new Position(0, 0), result.TilePosition);
+            Assert.AreEqual(new Position(2, 2), result.InGridPosition);
+            Assert.AreEqual(new Position(0, 0), result.InTilePosition);
         }
         [Test]
         public void AboveTileSizePositivePosition()
         {
             var result = _navigator.Find(new Position(101, 101));
-            Assert.AreEqual(new Position(2, 2), result.GridPosition);
-            Assert.AreEqual(new Position(1, 1), result.TilePosition);
+            Assert.AreEqual(new Position(2, 2), result.InGridPosition);
+            Assert.AreEqual(new Position(1, 1), result.InTilePosition);
         }
 
         [Test]
         public void NonZeroNegativePositionInFirstTile()
         {
             var result = _navigator.Find(new Position(-10, -10));
-            Assert.AreEqual(new Position(-1, -1), result.GridPosition);
-            Assert.AreEqual(new Position(90, 90), result.TilePosition);
+            Assert.AreEqual(new Position(-1, -1), result.InGridPosition);
+            Assert.AreEqual(new Position(90, 90), result.InTilePosition);
         }
 
         [Test]
         public void PriorToTileSizeNegativePosition()
         {
             var result1 = _navigator.Find(new Position(-99, -99));
-            Assert.AreEqual(new Position(-1, -1), result1.GridPosition);
-            Assert.AreEqual(new Position(1, 1), result1.TilePosition);
+            Assert.AreEqual(new Position(-1, -1), result1.InGridPosition);
+            Assert.AreEqual(new Position(1, 1), result1.InTilePosition);
         }
         
         [Test]
         public void TileSizeNegativePosition()
         {
             var result1 = _navigator.Find(new Position(-100, -100));
-            Assert.AreEqual(new Position(-1, -1), result1.GridPosition);
-            Assert.AreEqual(new Position(0, 0), result1.TilePosition);
+            Assert.AreEqual(new Position(-1, -1), result1.InGridPosition);
+            Assert.AreEqual(new Position(0, 0), result1.InTilePosition);
         }
         
         [Test]
         public void AboveTileSizeNegativePosition()
         {
             var result = _navigator.Find(new Position(-101, -101));
-            Assert.AreEqual(new Position(-2, -2), result.GridPosition);
-            Assert.AreEqual(new Position(99, 99), result.TilePosition);
+            Assert.AreEqual(new Position(-2, -2), result.InGridPosition);
+            Assert.AreEqual(new Position(99, 99), result.InTilePosition);
         }
     }
 }

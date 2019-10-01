@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Core.Model.Space;
+using Core.Model.Space.Grid;
 
 namespace Core.View
 {

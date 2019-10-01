@@ -1,6 +1,6 @@
 using System;
 
-namespace Core.Model.Space
+namespace Core.Model.Space.Grid
 {
     public class SpaceGridNavigator
     {
@@ -33,17 +33,31 @@ namespace Core.Model.Space
                 new Position(tileRow, tileColumn)
             );
         }
+
+        public Position FindTile(Position position)
+        {
+            var xPos = position.X;
+            var yPos = position.Y;
+
+            var xOffset = position.Y < 0 ? 1 : 0;
+            var yOffset = position.X < 0 ? 1 : 0;
+
+            var gridX = (xPos >= 0 ? 1 : -1) + ((xPos + yOffset) / _tileSize);
+            var gridY = (yPos >= 0 ? 1 : -1) + ((yPos + xOffset) / _tileSize);
+
+            return new Position(gridX, gridY);
+        }
     }
 
     public readonly struct TargetPosition
     {
-        public readonly Position GridPosition;
-        public readonly Position TilePosition;
+        public readonly Position InGridPosition;
+        public readonly Position InTilePosition;
 
-        public TargetPosition(Position gridPosition, Position tilePosition)
+        public TargetPosition(Position inGridPosition, Position inTilePosition)
         {
-            GridPosition = gridPosition;
-            TilePosition = tilePosition;
+            InGridPosition = inGridPosition;
+            InTilePosition = inTilePosition;
         }
     }
 }

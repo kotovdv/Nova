@@ -1,10 +1,18 @@
+using System;
+using System.Runtime.Serialization;
 using UnityEngine;
 
 namespace Core.Model.Space
 {
+    [Serializable]
+    [DataContract]
     public readonly struct Position
     {
-        public readonly int X, Y;
+        [DataMember]
+        public readonly int X;
+
+        [DataMember]
+        public readonly int Y;
 
         public Position(int x, int y)
         {

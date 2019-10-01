@@ -1,4 +1,4 @@
-namespace Core.Model.Space
+namespace Core.Model.Space.Grid
 {
     public interface IPlanetAction
     {
