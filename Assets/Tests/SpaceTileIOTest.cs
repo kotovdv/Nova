@@ -1,25 +1,20 @@
 using System.IO;
 using Core.Model.Space;
 using Core.Model.Space.Grid;
-using Core.Model.Space.Grid.Storage;
+using Core.Model.Space.Grid.IO;
 using NUnit.Framework;
 
 namespace Tests
 {
     public class SpaceTileIOTest
     {
-        private readonly Planet?[][] _planets =
-        {
-            new Planet?[] {new Planet(35, new Color(1, 1, 1))},
-            new Planet?[] {new Planet(100, new Color(10, 10, 10))}
-        };
-
         private readonly SpaceTileIO _spaceTileIo = new SpaceTileIO(Path.GetTempPath());
+        private readonly SpaceTileFactory _factory = new SpaceTileFactory(100, 10_000, 100, 0, 100, 10);
 
         [Test]
         public void SerializationAndDeserialization()
         {
-            var expected = new SpaceTile(_planets, new Position[] { });
+            var expected = _factory.CreateTile();
 
             _spaceTileIo.Write(new Position(0, 0), ref expected);
 
@@ -27,6 +22,13 @@ namespace Tests
 
             Assert.IsTrue(actual[0, 0].Equals(expected[0, 0]));
             Assert.IsTrue(actual[1, 0].Equals(expected[1, 0]));
+
+            for (var x = 0; x < 100; x++)
+            for (var y = 0; y < 100; y++)
+            {
+                Assert.IsTrue(actual[x,y].HasValue);
+                Assert.AreEqual(actual[x, y], expected[x, y]);
+            }
         }
     }
 }
