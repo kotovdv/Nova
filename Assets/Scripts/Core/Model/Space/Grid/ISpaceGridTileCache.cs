@@ -1,3 +1,5 @@
+using Core.Model.Space.Tiles;
+
 namespace Core.Model.Space.Grid
 {
     public interface ISpaceGridTileCache

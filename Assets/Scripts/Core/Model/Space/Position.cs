@@ -25,6 +25,16 @@ namespace Core.Model.Space
             return new Vector3(X, Y);
         }
 
+        public int At(Axis axis)
+        {
+            return axis == Space.Axis.X ? X : Y;
+        }
+
+        public static Position operator -(Position p1)
+        {
+            return new Position(-p1.X, -p1.Y);
+        }
+
         public static Position operator +(Position p1, Position p2)
         {
             return new Position(p1.X + p2.X, p1.Y + p2.Y);

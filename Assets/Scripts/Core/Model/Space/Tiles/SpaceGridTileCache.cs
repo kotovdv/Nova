@@ -1,10 +1,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Core.Model.Space.Grid.Storage;
+using System.Threading;
+using Core.Model.Space.Grid;
+using Core.Model.Space.Grid.IO;
 using Core.Util;
 
-namespace Core.Model.Space.Grid
+namespace Core.Model.Space.Tiles
 {
     public class SpaceGridTileCache : ISpaceGridTileCache
     {
@@ -15,8 +16,10 @@ namespace Core.Model.Space.Grid
         private readonly SpaceTileFactory _tileFactory;
         private readonly IDictionary<Position, SpaceTile?> _tiles = new Dictionary<Position, SpaceTile?>();
         private readonly IDictionary<Position, bool?> _tilesLoadStatuses = new Dictionary<Position, bool?>();
-        private readonly IDictionary<Position, TaskType?> _tilesTasks = new Dictionary<Position, TaskType?>();
-        private readonly BlockingCollection<Position> _positionsWithTasks = new BlockingCollection<Position>();
+
+        private long _taskId;
+        private readonly ConcurrentStack<Task> _tasks = new ConcurrentStack<Task>();
+        private readonly IDictionary<Position, long> _tileLastTask = new Dictionary<Position, long>();
 
         public SpaceGridTileCache(int threadsCount, SpaceTileIO tileIO, SpaceTileFactory tileFactory)
         {
@@ -29,10 +32,8 @@ namespace Core.Model.Space.Grid
         {
             for (var i = 0; i < _threadsCount; i++)
             {
-                Task.Factory.StartNew(() =>
-                {
-                    while (true) ConsumeTask();
-                }, TaskCreationOptions.LongRunning);
+                var thread = new Thread(ConsumeTaskLoop) {Name = "CacheThread_" + i};
+                thread.Start();
             }
         }
 
@@ -52,20 +53,12 @@ namespace Core.Model.Space.Grid
 
         public void LoadAsync(Position position)
         {
-            lock (_synchronizer[position])
-            {
-                _tilesTasks[position] = TaskType.Load;
-                _positionsWithTasks.Add(position);
-            }
+            AddTask(position, TaskType.Load);
         }
 
         public void UnloadAsync(Position position)
         {
-            lock (_synchronizer[position])
-            {
-                _tilesTasks[position] = TaskType.Unload;
-                _positionsWithTasks.Add(position);
-            }
+            AddTask(position, TaskType.Unload);
         }
 
         public void Load(Position position)
@@ -90,18 +83,32 @@ namespace Core.Model.Space.Grid
 
                 if (!isLoaded.HasValue || !isLoaded.Value) return;
 
+                var tile = _tiles[position].Value;
+                _tileIO.Write(position, ref tile);
                 _tiles[position] = null;
                 _tilesLoadStatuses[position] = false;
             }
         }
 
+        private void ConsumeTaskLoop()
+        {
+            while (true) ConsumeTask();
+        }
+
         private void ConsumeTask()
         {
-            var position = _positionsWithTasks.Take();
+            if (!_tasks.TryPop(out var task))
+            {
+                Thread.Sleep(ThreadLocalRandom.Current().Next(25, 50));
+                return;
+            }
+
+            var position = task.Position;
             lock (_synchronizer[position])
             {
-                var task = _tilesTasks[position];
-                if (task == TaskType.Load)
+                if (task.Id <= _tileLastTask.GetOrDefault(position, -1)) return;
+
+                if (task.Type == TaskType.Load)
                 {
                     Load(position);
                 }
@@ -109,13 +116,34 @@ namespace Core.Model.Space.Grid
                 {
                     Unload(position);
                 }
+
+                _tileLastTask[position] = task.Id;
             }
+        }
+
+        private void AddTask(Position position, TaskType taskType)
+        {
+            _tasks.Push(new Task(Interlocked.Increment(ref _taskId), position, taskType));
         }
 
         private enum TaskType
         {
             Load,
             Unload
+        }
+
+        private readonly struct Task
+        {
+            public readonly long Id;
+            public readonly Position Position;
+            public readonly TaskType Type;
+
+            public Task(long id, Position position, TaskType type)
+            {
+                Position = position;
+                Type = type;
+                Id = id;
+            }
         }
     }
 }

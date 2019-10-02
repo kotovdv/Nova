@@ -46,5 +46,31 @@ namespace Core.Model.Space
         {
             return new Position(LeftX + Size - 1, BottomY + Size - 1);
         }
+
+        public bool Equals(Square other)
+        {
+            return Size == other.Size && LeftX == other.LeftX && BottomY == other.BottomY;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Square other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Size;
+                hashCode = (hashCode * 397) ^ LeftX;
+                hashCode = (hashCode * 397) ^ BottomY;
+                return hashCode;
+            }
+        }
+
+        public override string ToString()
+        {
+            return $"{nameof(Size)}: {Size}, {nameof(LeftX)}: {LeftX}, {nameof(BottomY)}: {BottomY}";
+        }
     }
 }

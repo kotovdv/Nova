@@ -12,7 +12,7 @@ namespace Core
         private readonly SpaceGrid _spaceGrid;
         private readonly GameConfiguration _conf;
         private readonly ObservablePlanets _planets;
-        private readonly SpaceGridTilesVisibilityManager _spaceGridTilesVisibilityManager;
+        private readonly SpaceGridTilesVisibilityManager _tilesManager;
 
         private Square _altView;
         private Square _regView;
@@ -21,13 +21,13 @@ namespace Core
         public Game(
             int playerRating,
             SpaceGrid spaceGrid,
-            SpaceGridTilesVisibilityManager tilesVisibilityManager,
+            SpaceGridTilesVisibilityManager tilesManager,
             GameConfiguration conf)
         {
             _conf = conf;
             _spaceGrid = spaceGrid;
             _playerRating = playerRating;
-            _spaceGridTilesVisibilityManager = tilesVisibilityManager;
+            _tilesManager = tilesManager;
             _planets = new ObservablePlanets(_spaceGrid, _conf.AlternativeViewCapacity, _playerRating);
         }
 
@@ -65,6 +65,8 @@ namespace Core
             _regView = _regView.Shift(delta);
             _playerPosition += delta;
 
+            _tilesManager.OnViewsChanged(_regView, _altView);
+
             return CurrentState();
         }
 
@@ -83,6 +85,8 @@ namespace Core
             {
                 _regView = ZoomView(ref _regView, inside, _planets.Show, _planets.Hide);
             }
+
+            _tilesManager.OnViewsChanged(_regView, _altView);
 
             return CurrentState();
         }

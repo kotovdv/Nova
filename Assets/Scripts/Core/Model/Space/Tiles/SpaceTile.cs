@@ -1,15 +1,15 @@
 using System;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
-namespace Core.Model.Space.Grid
+namespace Core.Model.Space.Tiles
 {
     [Serializable]
     public struct SpaceTile
     {
-        [DataMember]
+        [JsonProperty]
         private readonly Planet?[][] _planets;
 
-        [DataMember]
+        [JsonProperty]
         private readonly Position[] _closestPlanetsByRating;
 
         public SpaceTile(Planet?[][] planets, Position[] closestPlanetsByRating)
