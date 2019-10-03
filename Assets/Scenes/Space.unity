@@ -142,6 +142,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1120965680}
   - component: {fileID: 1120965681}
+  - component: {fileID: 1120965679}
   m_Layer: 0
   m_Name: Game Context
   m_TagString: Untagged
@@ -149,6 +150,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1120965679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1120965678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 045679ee1930402983d063022b4f7b65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameView: {fileID: 1120965681}
 --- !u!4 &1120965680
 Transform:
   m_ObjectHideFlags: 0
@@ -180,6 +194,7 @@ MonoBehaviour:
     type: 3}
   planetPrefab: {fileID: 4321965703466079110, guid: 943934266d90bd943a0cc0a74f0c1d48,
     type: 3}
+  playerController: {fileID: 1120965679}
   configuration: {fileID: 11400000, guid: 2ce18844dfb68744590c6355eb4794e0, type: 2}
 --- !u!1001 &205065858862435042
 PrefabInstance:
