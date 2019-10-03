@@ -10,35 +10,35 @@ namespace EngineComponents
     {
         //Min value for view distance (i.e. NxN square around the ship)
         [Min(0)]
-        [SerializeField] private int minZoom;
+        [SerializeField] private int minZoom = default;
 
         //Max value for view distance (i.e. NxN square around the ship)
         [Min(0)]
-        [SerializeField] private int maxZoom;
+        [SerializeField] private int maxZoom = default;
 
         //Density of planets (0 - no planets. 1 - each cell contains a planet)
         [Range(0, 1)]
-        [SerializeField] private float density;
+        [SerializeField] private float density = default;
 
         //Minimum possible rating of an object.
         [Min(0)]
-        [SerializeField] private int minRating;
+        [SerializeField] private int minRating = default;
 
         //Maximum possible rating of an object
         [Min(0)]
-        [SerializeField] private int maxRating;
+        [SerializeField] private int maxRating = default;
 
         //N threshold from where view is switched to alternative rating based view.
         [Min(0)]
-        [SerializeField] private int alternativeViewThreshold;
+        [SerializeField] private int alternativeViewThreshold = default;
 
         //Maximum amount of planets that can be displayed simultaneously in rating based view.
         [Min(0)]
-        [SerializeField] private int alternativeViewCapacity;
+        [SerializeField] private int alternativeViewCapacity = default;
 
         //Space will be generated via tiles with given TileSize. Choose carefully.
         [Min(0)]
-        [SerializeField] private int tileSize;
+        [SerializeField] private int tileSize = default;
 
         //Maximum amount of planets that can be displayed in any game view.
         public int MaximumObservablePlanets => Mathf.CeilToInt(Math.Max(
@@ -62,8 +62,8 @@ namespace EngineComponents
 
         private void OnValidate()
         {
-            Assert.IsTrue(minZoom <= maxZoom, "Min view distance should be less or equal to max view distance");
-            Assert.IsTrue(minRating <= maxRating, "Min possible rating should be less or equal to max possible rating");
+            Assert.IsTrue(minZoom < maxZoom, "Min view distance should be less than max view distance");
+            Assert.IsTrue(minRating <= maxRating, "Min possible rating should be less than max possible rating");
             Assert.IsTrue(minZoom < alternativeViewThreshold && alternativeViewThreshold < maxZoom,
                 "Alternative view threshold should be between min N and max N");
         }

@@ -1,4 +1,3 @@
-using Core.Model.Space;
 using UnityEngine;
 
 namespace EngineComponents.View
@@ -8,15 +7,10 @@ namespace EngineComponents.View
         [SerializeField] private TextMesh textMesh = default;
         [SerializeField] private Transform shipTransform = default;
 
-        public void Init(int playerRating, Position playerPosition)
+        public void Init(int playerRating)
         {
-            SetPosition(playerPosition);
             textMesh.text = playerRating.ToString();
-        }
-
-        public void SetPosition(Position position)
-        {
-            shipTransform.position = new Vector3(position.X, position.Y);
+            shipTransform.position = new Vector3(0, 0);
         }
     }
 }

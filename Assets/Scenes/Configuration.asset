@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minZoom: 5
   maxZoom: 10000
-  density: 1
+  density: 0.3
   minRating: 0
   maxRating: 12000
   alternativeViewThreshold: 10

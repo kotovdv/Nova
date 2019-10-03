@@ -42,7 +42,7 @@ namespace EngineComponents
             _gridCamera.Adjust(initialState.Zoom);
 
             _shipView = shipInstance.GetComponent<ShipView>();
-            _shipView.Init(initialState.PlayerRating, initialState.PlayerPosition);
+            _shipView.Init(initialState.PlayerRating);
 
             UpdateGameState(initialState);
         }
@@ -90,11 +90,12 @@ namespace EngineComponents
 
             var playerPosition = state.PlayerPosition;
             uiView.UpdatePosition(playerPosition);
-            _shipView.SetPosition(playerPosition);
 
             foreach (var posPlanet in _planetViews)
             {
-                _planetsPool.Return(posPlanet.Value);
+                var planetView = posPlanet.Value;
+                planetView.gameObject.SetActive(false);
+                _planetsPool.Return(planetView);
             }
 
             DisplayPlanets(state, playerPosition.ToVector3());
@@ -109,23 +110,24 @@ namespace EngineComponents
 
             foreach (var posPlanet in state.VisiblePlanets)
             {
-                var planetView = _planetViews.GetOrCompute(posPlanet.Key, () => _planetsPool.Borrow());
-                planetView.gameObject.SetActive(true);
-
-                var planetPosition = new Vector3(posPlanet.Key.X, posPlanet.Key.Y);
-                if (!state.IsRegularView)
+                var planetPos = posPlanet.Key;
+                if (!_planetViews.TryGetValue(planetPos, out var planetView))
                 {
-                    //TODO simplify
-                    planetPosition -= playerPosition;
-                    var actualDistance = planetPosition.magnitude;
-                    var scale = actualDistance / maxDistance;
-                    planetPosition.Normalize();
-                    planetPosition *= _gridCamera.OrthographicSize;
-                    planetPosition *= scale;
-                    planetPosition += playerPosition;
+                    planetView = _planetsPool.Borrow();
+                    _planetViews[planetPos] = planetView;
                 }
 
-                planetView.Init(planetPosition, posPlanet.Value);
+                var planetVector = planetPos.ToVector3() - playerPosition;
+
+                if (!state.IsRegularView)
+                {
+                    var scale = planetVector.magnitude / maxDistance;
+                    planetVector.Normalize();
+                    planetVector *= scale * _gridCamera.OrthographicSize;
+                }
+
+                planetView.gameObject.SetActive(true);
+                planetView.Init(planetVector, posPlanet.Value);
             }
         }
     }

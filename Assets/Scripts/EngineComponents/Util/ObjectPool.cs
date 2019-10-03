@@ -31,14 +31,11 @@ namespace EngineComponents.Util
 
         public T Borrow()
         {
-            var component = _storage.Pop();
-            component.gameObject.SetActive(true);
-            return component;
+            return _storage.Pop();
         }
 
         public void Return(T t)
         {
-            t.gameObject.SetActive(false);
             _storage.Push(t);
         }
     }

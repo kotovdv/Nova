@@ -6,8 +6,10 @@ namespace EngineComponents.View
     public class GridCamera : MonoBehaviour
     {
         [SerializeField] private Camera cam = default;
+        
         private int _currentGridSize;
         private float _currentAspect;
+        
         public float OrthographicSize => cam.orthographicSize;
 
         private void Awake()
@@ -26,6 +28,7 @@ namespace EngineComponents.View
         {
             _currentGridSize = gridSize;
             var requiredSize = Mathf.CeilToInt(gridSize / 2F) + 1;
+
             if (cam.aspect < 1.0F)
             {
                 requiredSize = Mathf.CeilToInt(requiredSize / cam.aspect);
