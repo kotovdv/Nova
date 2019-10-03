@@ -1,25 +1,22 @@
-using System;
 using System.Collections.Generic;
-using Core;
 using Core.Configuration;
 using Core.Model.Game;
 using Core.Model.Space;
-using Core.Util;
 using EngineComponents.Util;
 using EngineComponents.View;
 using UnityEngine;
 
 namespace EngineComponents
 {
-    public class GameBehaviour : MonoBehaviour
+    public class GameView : MonoBehaviour
     {
         [SerializeField] private UIView uiView = default;
         [SerializeField] private GameObject shipPrefab = default;
         [SerializeField] private GameObject planetPrefab = default;
+        [SerializeField] private PlayerController playerController = default;
         [SerializeField] private ConfigurationScriptableObject configuration = default;
 
         private int _zoom;
-        private IGame _game;
         private ShipView _shipView;
         private GridCamera _gridCamera;
         private ObjectPool<PlanetView> _planetsPool;
@@ -35,7 +32,7 @@ namespace EngineComponents
             );
 
             var (gameInstance, initialState) = GameFactory.Generate(configuration.GameConfiguration());
-            _game = gameInstance;
+            playerController.Init(gameInstance);
 
             var shipInstance = Instantiate(shipPrefab);
             _gridCamera = shipInstance.GetComponentInChildren<GridCamera>();
@@ -44,42 +41,10 @@ namespace EngineComponents
             _shipView = shipInstance.GetComponent<ShipView>();
             _shipView.Init(initialState.PlayerRating);
 
-            UpdateGameState(initialState);
+            UpdateView(initialState);
         }
 
-        private void Update()
-        {
-            Direction? direction = null;
-
-            if (Input.GetKeyDown(KeyCode.W))
-            {
-                direction = Direction.Up;
-            }
-            else if ((Input.GetKeyDown(KeyCode.A)))
-            {
-                direction = Direction.Left;
-            }
-            else if (((Input.GetKeyDown(KeyCode.D))))
-            {
-                direction = Direction.Right;
-            }
-            else if ((Input.GetKeyDown(KeyCode.S)))
-            {
-                direction = Direction.Down;
-            }
-
-            if (direction.HasValue)
-            {
-                UpdateGameState(_game.Move(direction.Value));
-            }
-
-            var mouseScrollDelta = Input.mouseScrollDelta;
-            if (mouseScrollDelta == Vector2.zero) return;
-
-            UpdateGameState(_game.Zoom(mouseScrollDelta.y > 0));
-        }
-
-        private void UpdateGameState(State state)
+        public void UpdateView(State state)
         {
             _zoom = state.Zoom;
             uiView.UpdateZoom(_zoom);
@@ -90,7 +55,6 @@ namespace EngineComponents
 
             var playerPosition = state.PlayerPosition;
             uiView.UpdatePosition(playerPosition);
-
             foreach (var posPlanet in _planetViews)
             {
                 var planetView = posPlanet.Value;
@@ -104,10 +68,8 @@ namespace EngineComponents
         private void DisplayPlanets(State state, Vector3 playerPosition)
         {
             _planetViews.Clear();
-
             var sideSquare = Mathf.Pow(_zoom / 2F, 2);
             var maxDistance = Mathf.Sqrt(sideSquare + sideSquare);
-
             foreach (var posPlanet in state.VisiblePlanets)
             {
                 var planetPos = posPlanet.Key;
