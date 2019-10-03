@@ -14,12 +14,12 @@ namespace Core.Model.Space.Tiles
         private readonly SpaceTileIO _tileIO;
         private readonly SpaceTileFactory _tileFactory;
 
-        private readonly IDictionary<Position, SpaceTile> _tiles = new Dictionary<Position, SpaceTile>();
-        private readonly IDictionary<Position, bool?> _tilesLoadStatuses = new Dictionary<Position, bool?>();
-
         private long _taskId;
+        
         private readonly ConcurrentStack<Task> _tasks = new ConcurrentStack<Task>();
-        private readonly IDictionary<Position, long> _tileLastTask = new Dictionary<Position, long>();
+        private readonly ConcurrentDictionary<Position, long> _tileLastTask = new ConcurrentDictionary<Position, long>();
+        private readonly ConcurrentDictionary<Position, SpaceTile> _tiles = new ConcurrentDictionary<Position, SpaceTile>();
+        private readonly ConcurrentDictionary<Position, bool?> _tilesLoadStatuses = new ConcurrentDictionary<Position, bool?>();
 
         public SpaceGridTileCache(int threadsCount, SpaceTileIO tileIO, SpaceTileFactory tileFactory)
         {
@@ -84,7 +84,7 @@ namespace Core.Model.Space.Tiles
                 var tile = _tiles[position];
                 _tileIO.Write(position, ref tile);
 
-                _tiles.Remove(position);
+                _tiles.TryRemove(position, out _);
                 _tilesLoadStatuses[position] = false;
             }
         }
