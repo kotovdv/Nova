@@ -12,13 +12,13 @@ namespace EngineComponents
     {
         [SerializeField] private UIView uiView = default;
         [SerializeField] private GameObject shipPrefab = default;
+        [SerializeField] private GridCamera gridCamera;
         [SerializeField] private GameObject planetPrefab = default;
         [SerializeField] private PlayerController playerController = default;
         [SerializeField] private ConfigurationScriptableObject configuration = default;
 
         private int _zoom;
         private ShipView _shipView;
-        private GridCamera _gridCamera;
         private ObjectPool<PlanetView> _planetsPool;
         private readonly IDictionary<Position, PlanetView> _planetViews = new Dictionary<Position, PlanetView>();
 
@@ -35,8 +35,7 @@ namespace EngineComponents
             playerController.Init(gameInstance);
 
             var shipInstance = Instantiate(shipPrefab);
-            _gridCamera = shipInstance.GetComponentInChildren<GridCamera>();
-            _gridCamera.Adjust(initialState.Zoom);
+            gridCamera.Adjust(initialState.Zoom);
 
             _shipView = shipInstance.GetComponent<ShipView>();
             _shipView.Init(initialState.PlayerRating);
@@ -50,7 +49,7 @@ namespace EngineComponents
             uiView.UpdateZoom(_zoom);
             if (state.IsRegularView)
             {
-                _gridCamera.Adjust(_zoom);
+                gridCamera.Adjust(_zoom);
             }
 
             var playerPosition = state.PlayerPosition;
@@ -85,7 +84,7 @@ namespace EngineComponents
                 {
                     var scale = planetVector.magnitude / maxDistance;
                     planetVector.Normalize();
-                    planetVector *= scale * _gridCamera.OrthographicSize;
+                    planetVector *= scale * gridCamera.OrthographicSize;
                 }
 
                 planetView.gameObject.SetActive(true);
