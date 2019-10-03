@@ -14,7 +14,7 @@ namespace Core.Model.Space.Tiles
         private readonly SpaceTileIO _tileIO;
         private readonly SpaceTileFactory _tileFactory;
 
-        private readonly IDictionary<Position, SpaceTile?> _tiles = new Dictionary<Position, SpaceTile?>();
+        private readonly IDictionary<Position, SpaceTile> _tiles = new Dictionary<Position, SpaceTile>();
         private readonly IDictionary<Position, bool?> _tilesLoadStatuses = new Dictionary<Position, bool?>();
 
         private long _taskId;
@@ -41,13 +41,10 @@ namespace Core.Model.Space.Tiles
         {
             lock (_synchronizer[position])
             {
-                var tile = _tiles.GetOrDefault(position, null);
-                if (tile == null)
-                {
-                    Load(position);
-                }
+                if (_tiles.TryGetValue(position, out var tile)) return tile;
+                Load(position);
 
-                return _tiles[position].Value;
+                return _tiles[position];
             }
         }
 
@@ -84,10 +81,10 @@ namespace Core.Model.Space.Tiles
 
                 if (!isLoaded.HasValue || !isLoaded.Value) return;
 
-                var tile = _tiles[position].Value;
+                var tile = _tiles[position];
                 _tileIO.Write(position, ref tile);
 
-                _tiles[position] = null;
+                _tiles.Remove(position);
                 _tilesLoadStatuses[position] = false;
             }
         }

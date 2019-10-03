@@ -8,7 +8,7 @@ namespace Core.View
     public class ObservablePlanets
     {
         private readonly SpaceGrid _spaceGrid;
-        private readonly AltObservableSet _altObservableSet;
+        private readonly AltViewSet _altViewSet;
         private readonly IDictionary<Position, Planet> _observable;
         private readonly IDictionary<Position, Planet> _altObservable;
         private readonly ReadOnlyDictionary<Position, Planet> _readOnlyObservable;
@@ -27,7 +27,7 @@ namespace Core.View
             _altObservable = new Dictionary<Position, Planet>();
             _readOnlyObservable = new ReadOnlyDictionary<Position, Planet>(_observable);
             _readOnlyAltObservable = new ReadOnlyDictionary<Position, Planet>(_altObservable);
-            _altObservableSet = new AltObservableSet(altViewCapacity, playerRating);
+            _altViewSet = new AltViewSet(altViewCapacity, playerRating);
 
             Show = new ShowAction(this);
             Hide = new HideAction(this);
@@ -44,7 +44,7 @@ namespace Core.View
         public ReadOnlyDictionary<Position, Planet> GetAltObservablePlanets()
         {
             _altObservable.Clear();
-            var currentlyVisible = _altObservableSet.CurrentlyVisible();
+            var currentlyVisible = _altViewSet.CurrentlyVisible();
             foreach (var position in currentlyVisible)
             {
                 var planet = _spaceGrid.GetPlanet(position);
@@ -116,7 +116,7 @@ namespace Core.View
 
             public override void Invoke(Position position, Planet planet)
             {
-                Planets._altObservableSet.Add(position, planet.Rating);
+                Planets._altViewSet.Add(position, planet.Rating);
             }
         }
 
@@ -128,7 +128,7 @@ namespace Core.View
 
             public override void Invoke(Position position, Planet planet)
             {
-                Planets._altObservableSet.Remove(position, planet.Rating);
+                Planets._altViewSet.Remove(position, planet.Rating);
             }
         }
     }

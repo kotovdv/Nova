@@ -40,7 +40,7 @@ namespace Core.Model.Space.Grid
                 ? (pos.X + _zeroIndexOffset) / _tileSize
                 : (1 + pos.X + _zeroIndexOffset - _tileSize) / _tileSize;
 
-            var tileY = pos.X >= 0
+            var tileY = pos.Y >= 0
                 ? (pos.Y + _zeroIndexOffset) / _tileSize
                 : (1 + pos.Y + _zeroIndexOffset - _tileSize) / _tileSize;
 

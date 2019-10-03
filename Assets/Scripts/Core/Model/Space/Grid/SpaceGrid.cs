@@ -26,7 +26,7 @@ namespace Core.Model.Space.Grid
 
             return optional.Value;
         }
-        
+
         public Planet? TryGetPlanet(Position position)
         {
             var targetPosition = _navigator.Find(position);

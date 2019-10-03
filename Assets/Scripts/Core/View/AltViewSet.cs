@@ -1,25 +1,24 @@
 using System;
 using System.Collections.Generic;
-using Core.Model.Game;
 using Core.Model.Space;
 using Core.Util;
 
 namespace Core.View
 {
-    public class AltObservableSet
+    public class AltViewSet
     {
         private readonly int _capacity;
         private readonly int _playerRating;
 
         private readonly IList<Position> _currentlyVisibleBuffer;
-        private readonly SortedDictionary<int, ISet<Position>> _storage;
+        private readonly SortedDictionary<int, LinkedHashSet<Position>> _storage;
 
-        public AltObservableSet(int capacity, int playerRating)
+        public AltViewSet(int capacity, int playerRating)
         {
             _capacity = capacity;
             _playerRating = playerRating;
             _currentlyVisibleBuffer = new List<Position>(_capacity);
-            _storage = new SortedDictionary<int, ISet<Position>>();
+            _storage = new SortedDictionary<int, LinkedHashSet<Position>>();
         }
 
         public void Add(Position position, int planetRating)
@@ -29,7 +28,7 @@ namespace Core.View
             var set = _storage.GetOrDefault(ratingDelta);
             if (set == null)
             {
-                set = new HashSet<Position>();
+                set = new LinkedHashSet<Position>();
                 _storage[ratingDelta] = set;
             }
 
@@ -44,7 +43,7 @@ namespace Core.View
             if (set == null) return;
 
             set.Remove(position);
-            if (set.Count == 0)
+            if (set.IsEmpty())
             {
                 _storage.Remove(ratingDelta);
             }
@@ -58,11 +57,10 @@ namespace Core.View
             foreach (var kvp in _storage)
             {
                 var positions = kvp.Value;
-                //TODO order is not preserved
+                if (counter == _capacity) break;
                 foreach (var position in positions)
                 {
                     if (counter == _capacity) break;
-
                     _currentlyVisibleBuffer.Add(position);
                     counter++;
                 }
