@@ -1,4 +1,3 @@
-using System;
 using Core.Model.Space.Tiles;
 
 namespace Core.Model.Space.Grid
@@ -16,18 +15,7 @@ namespace Core.Model.Space.Grid
             _spaceGridTileCache = spaceGridTileCache;
         }
 
-        public Planet GetPlanet(Position position)
-        {
-            var optional = TryGetPlanet(position);
-            if (!optional.HasValue)
-            {
-                throw new NullReferenceException("No planet at [" + position + "]");
-            }
-
-            return optional.Value;
-        }
-
-        public Planet? TryGetPlanet(Position position)
+        public ref Planet? TryGetPlanet(Position position)
         {
             var targetPosition = _navigator.Find(position);
             var tilePosition = targetPosition.TilePosition;
@@ -35,7 +23,7 @@ namespace Core.Model.Space.Grid
 
             var tile = _spaceGridTileCache.Get(tilePosition);
 
-            return tile[elemPosition.X, elemPosition.Y];
+            return ref tile.GetValue(elemPosition);
         }
 
         /// <summary>

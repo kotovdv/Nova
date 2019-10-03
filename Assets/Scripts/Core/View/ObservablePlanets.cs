@@ -47,8 +47,11 @@ namespace Core.View
             var currentlyVisible = _altViewSet.CurrentlyVisible();
             foreach (var position in currentlyVisible)
             {
-                var planet = _spaceGrid.GetPlanet(position);
-                _altObservable[position] = planet;
+                var planet = _spaceGrid.TryGetPlanet(position);
+                if (planet.HasValue)
+                {
+                    _altObservable[position] = planet.Value;
+                }
             }
 
             return _readOnlyAltObservable;

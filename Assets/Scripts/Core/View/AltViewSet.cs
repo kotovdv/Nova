@@ -25,8 +25,7 @@ namespace Core.View
         {
             var ratingDelta = CalculateDelta(planetRating);
 
-            var set = _storage.GetOrDefault(ratingDelta);
-            if (set == null)
+            if (!_storage.TryGetValue(ratingDelta, out var set))
             {
                 set = new LinkedHashSet<Position>();
                 _storage[ratingDelta] = set;
@@ -39,8 +38,7 @@ namespace Core.View
         {
             var ratingDelta = CalculateDelta(planetRating);
 
-            var set = _storage.GetOrDefault(ratingDelta);
-            if (set == null) return;
+            if (!_storage.TryGetValue(ratingDelta, out var set)) return;
 
             set.Remove(position);
             if (set.IsEmpty())

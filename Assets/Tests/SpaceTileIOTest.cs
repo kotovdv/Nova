@@ -23,8 +23,8 @@ namespace Tests
             for (var x = 0; x < 100; x++)
             for (var y = 0; y < 100; y++)
             {
-                Assert.IsTrue(actual[x, y].HasValue);
-                Assert.AreEqual(actual[x, y], expected[x, y]);
+                Assert.IsTrue(actual.GetValue(x,y).HasValue);
+                Assert.AreEqual(actual.GetValue(x, y), expected.GetValue(x, y));
             }
         }
     }

@@ -42,7 +42,7 @@ namespace Core.Model.Space
 
         public override bool Equals(object obj)
         {
-            return obj is Position other && Equals(other);
+            return obj is Position other && Equals(ref other);
         }
 
         public override int GetHashCode()
@@ -58,7 +58,7 @@ namespace Core.Model.Space
             return $"{nameof(X)}: {X}, {nameof(Y)}: {Y}";
         }
 
-        private bool Equals(Position other)
+        private bool Equals(ref Position other)
         {
             return X == other.X && Y == other.Y;
         }

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace Core.Model.Space.Tiles
 {
     [Serializable]
-    public struct SpaceTile
+    public class SpaceTile
     {
         [JsonProperty]
         private Planet?[,] _planets;
@@ -14,11 +14,14 @@ namespace Core.Model.Space.Tiles
             _planets = planets;
         }
 
-        public Planet? this[int x, int y] => GetValue(x, y);
-
-        private Planet? GetValue(int x, int y)
+        public ref Planet? GetValue(Position position)
         {
-            return _planets[x, y];
+            return ref GetValue(position.X, position.Y);
+        }
+
+        public ref Planet? GetValue(int x, int y)
+        {
+            return ref _planets[x, y];
         }
     }
 }
