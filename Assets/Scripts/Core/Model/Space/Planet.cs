@@ -1,16 +1,11 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace Core.Model.Space
 {
     [Serializable]
-    [DataContract]
     public readonly struct Planet
     {
-        [DataMember]
         public readonly int Rating;
-
-        [DataMember]
         public readonly Color Color;
 
         public Planet(int rating, Color color)
@@ -19,7 +14,7 @@ namespace Core.Model.Space
             Color = color;
         }
 
-        public bool Equals(Planet other)
+        private bool Equals(Planet other)
         {
             return Rating == other.Rating && Color.Equals(other.Color);
         }

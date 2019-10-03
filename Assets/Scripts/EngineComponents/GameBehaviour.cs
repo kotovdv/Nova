@@ -18,7 +18,7 @@ namespace EngineComponents
         [SerializeField] private GameObject planetPrefab = default;
         [SerializeField] private ConfigurationScriptableObject configuration = default;
 
-        private int zoom;
+        private int _zoom;
         private IGame _game;
         private ShipView _shipView;
         private GridCamera _gridCamera;
@@ -81,11 +81,11 @@ namespace EngineComponents
 
         private void UpdateGameState(State state)
         {
-            zoom = state.Zoom;
-            uiView.UpdateZoom(zoom);
+            _zoom = state.Zoom;
+            uiView.UpdateZoom(_zoom);
             if (state.IsRegularView)
             {
-                _gridCamera.Adjust(zoom);
+                _gridCamera.Adjust(_zoom);
             }
 
             var playerPosition = state.PlayerPosition;
@@ -104,7 +104,7 @@ namespace EngineComponents
         {
             _planetViews.Clear();
 
-            var sideSquare = Mathf.Pow(zoom / 2F, 2);
+            var sideSquare = Mathf.Pow(_zoom / 2F, 2);
             var maxDistance = Mathf.Sqrt(sideSquare + sideSquare);
 
             foreach (var posPlanet in state.VisiblePlanets)
@@ -115,6 +115,7 @@ namespace EngineComponents
                 var planetPosition = new Vector3(posPlanet.Key.X, posPlanet.Key.Y);
                 if (!state.IsRegularView)
                 {
+                    //TODO simplify
                     planetPosition -= playerPosition;
                     var actualDistance = planetPosition.magnitude;
                     var scale = actualDistance / maxDistance;

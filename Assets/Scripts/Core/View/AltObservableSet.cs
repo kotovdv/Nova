@@ -12,25 +12,25 @@ namespace Core.View
         private readonly int _playerRating;
 
         private readonly IList<Position> _currentlyVisibleBuffer;
-        private readonly SortedDictionary<RatingDiff, ISet<Position>> _storage;
+        private readonly SortedDictionary<int, ISet<Position>> _storage;
 
         public AltObservableSet(int capacity, int playerRating)
         {
             _capacity = capacity;
             _playerRating = playerRating;
             _currentlyVisibleBuffer = new List<Position>(_capacity);
-            _storage = new SortedDictionary<RatingDiff, ISet<Position>>(RatingDiff.AscComparator);
+            _storage = new SortedDictionary<int, ISet<Position>>();
         }
 
         public void Add(Position position, int planetRating)
         {
-            var ratingDiff = CreateRatingDiff(position, planetRating);
+            var ratingDelta = CalculateDelta(planetRating);
 
-            var set = _storage.GetOrDefault(ratingDiff);
+            var set = _storage.GetOrDefault(ratingDelta);
             if (set == null)
             {
                 set = new HashSet<Position>();
-                _storage[ratingDiff] = set;
+                _storage[ratingDelta] = set;
             }
 
             set.Add(position);
@@ -38,15 +38,15 @@ namespace Core.View
 
         public void Remove(Position position, int planetRating)
         {
-            var ratingDiff = CreateRatingDiff(position, planetRating);
+            var ratingDelta = CalculateDelta(planetRating);
 
-            var set = _storage.GetOrDefault(ratingDiff);
+            var set = _storage.GetOrDefault(ratingDelta);
             if (set == null) return;
 
             set.Remove(position);
             if (set.Count == 0)
             {
-                _storage.Remove(ratingDiff);
+                _storage.Remove(ratingDelta);
             }
         }
 
@@ -58,6 +58,7 @@ namespace Core.View
             foreach (var kvp in _storage)
             {
                 var positions = kvp.Value;
+                //TODO order is not preserved
                 foreach (var position in positions)
                 {
                     if (counter == _capacity) break;
@@ -70,9 +71,9 @@ namespace Core.View
             return _currentlyVisibleBuffer;
         }
 
-        private RatingDiff CreateRatingDiff(Position position, int planetRating)
+        private int CalculateDelta(int planetRating)
         {
-            return new RatingDiff(Math.Abs(_playerRating - planetRating), position);
+            return Math.Abs(_playerRating - planetRating);
         }
     }
 }

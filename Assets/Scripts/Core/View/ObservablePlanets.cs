@@ -19,7 +19,6 @@ namespace Core.View
         public readonly IPlanetAction AltShow;
         public readonly IPlanetAction AltHide;
         public readonly IPlanetAction CompositeShow;
-        public readonly IPlanetAction CompositeHIde;
 
         public ObservablePlanets(SpaceGrid spaceGrid, int altViewCapacity, int playerRating)
         {
@@ -29,13 +28,12 @@ namespace Core.View
             _readOnlyObservable = new ReadOnlyDictionary<Position, Planet>(_observable);
             _readOnlyAltObservable = new ReadOnlyDictionary<Position, Planet>(_altObservable);
             _altObservableSet = new AltObservableSet(altViewCapacity, playerRating);
-            
+
             Show = new ShowAction(this);
             Hide = new HideAction(this);
             AltShow = new AltShowAction(this);
             AltHide = new AltHideAction(this);
             CompositeShow = new CompositePlanetAction(this, new[] {Show, AltShow});
-            CompositeHIde = new CompositePlanetAction(this, new[] {Hide, AltHide});
         }
 
         public ReadOnlyDictionary<Position, Planet> GetObservablePlanets()
@@ -88,7 +86,9 @@ namespace Core.View
 
         private class ShowAction : PlanetAction
         {
-            public ShowAction(ObservablePlanets planets) : base(planets) { }
+            public ShowAction(ObservablePlanets planets) : base(planets)
+            {
+            }
 
             public override void Invoke(Position position, Planet planet)
             {
@@ -98,7 +98,9 @@ namespace Core.View
 
         private class HideAction : PlanetAction
         {
-            public HideAction(ObservablePlanets planets) : base(planets) { }
+            public HideAction(ObservablePlanets planets) : base(planets)
+            {
+            }
 
             public override void Invoke(Position position, Planet planet)
             {
@@ -108,7 +110,9 @@ namespace Core.View
 
         private class AltShowAction : PlanetAction
         {
-            public AltShowAction(ObservablePlanets planets) : base(planets) { }
+            public AltShowAction(ObservablePlanets planets) : base(planets)
+            {
+            }
 
             public override void Invoke(Position position, Planet planet)
             {
@@ -118,7 +122,9 @@ namespace Core.View
 
         private class AltHideAction : PlanetAction
         {
-            public AltHideAction(ObservablePlanets planets) : base(planets) { }
+            public AltHideAction(ObservablePlanets planets) : base(planets)
+            {
+            }
 
             public override void Invoke(Position position, Planet planet)
             {

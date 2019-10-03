@@ -1,19 +1,19 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using Core.Model.Space.Grid;
 using Core.Model.Space.Grid.IO;
 using Core.Util;
 
 namespace Core.Model.Space.Tiles
 {
-    public class SpaceGridTileCache : ISpaceGridTileCache
+    public class SpaceGridTileCache
     {
         private readonly Synchronizer<Position> _synchronizer = new Synchronizer<Position>();
 
         private readonly int _threadsCount;
         private readonly SpaceTileIO _tileIO;
         private readonly SpaceTileFactory _tileFactory;
+
         private readonly IDictionary<Position, SpaceTile?> _tiles = new Dictionary<Position, SpaceTile?>();
         private readonly IDictionary<Position, bool?> _tilesLoadStatuses = new Dictionary<Position, bool?>();
 
@@ -32,7 +32,7 @@ namespace Core.Model.Space.Tiles
         {
             for (var i = 0; i < _threadsCount; i++)
             {
-                var thread = new Thread(ConsumeTaskLoop) {Name = "CacheThread_" + i};
+                var thread = new Thread(ConsumeTaskLoop) {Name = "TilesCacheThread_" + i};
                 thread.Start();
             }
         }
@@ -70,12 +70,13 @@ namespace Core.Model.Space.Tiles
                 if (isLoaded.HasValue && isLoaded.Value) return;
 
                 var spaceTile = isLoaded.HasValue ? _tileIO.Read(position) : _tileFactory.CreateTile();
+
                 _tiles[position] = spaceTile;
                 _tilesLoadStatuses[position] = true;
             }
         }
 
-        public void Unload(Position position)
+        private void Unload(Position position)
         {
             lock (_synchronizer[position])
             {
@@ -85,6 +86,7 @@ namespace Core.Model.Space.Tiles
 
                 var tile = _tiles[position].Value;
                 _tileIO.Write(position, ref tile);
+
                 _tiles[position] = null;
                 _tilesLoadStatuses[position] = false;
             }
@@ -99,11 +101,12 @@ namespace Core.Model.Space.Tiles
         {
             if (!_tasks.TryPop(out var task))
             {
-                Thread.Sleep(ThreadLocalRandom.Current().Next(25, 50));
+                Thread.Sleep(ThreadLocalRandom.Current().Next(15, 31));
                 return;
             }
 
             var position = task.Position;
+
             lock (_synchronizer[position])
             {
                 if (task.Id <= _tileLastTask.GetOrDefault(position, -1)) return;

@@ -1,5 +1,4 @@
 using System.IO;
-using System.Runtime.Serialization;
 using Core.Model.Space.Tiles;
 using Newtonsoft.Json;
 
@@ -8,8 +7,6 @@ namespace Core.Model.Space.Grid.IO
     public class SpaceTileIO
     {
         private readonly string _directory;
-
-        private readonly DataContractSerializer _serializer = new DataContractSerializer(typeof(SpaceTile));
 
         public SpaceTileIO(string folder)
         {
@@ -24,12 +21,7 @@ namespace Core.Model.Space.Grid.IO
         {
             var filePath = ToFilePath(tilePosition);
 
-            var fileExists = File.Exists(filePath);
-            if (fileExists) File.Delete(filePath);
-
-            var serializeObject = JsonConvert.SerializeObject(tile);
-
-            File.WriteAllText(filePath, serializeObject);
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(tile));
         }
 
         public SpaceTile Read(Position tilePosition)

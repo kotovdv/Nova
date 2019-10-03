@@ -26,16 +26,16 @@ namespace Core.Model.Space.Grid
 
             return optional.Value;
         }
-
+        //green 11771
         public Planet? TryGetPlanet(Position position)
         {
             var targetPosition = _navigator.Find(position);
-            var gridPosition = targetPosition.InGridPosition;
-            var tilePos = targetPosition.InTilePosition;
+            var tilePosition = targetPosition.TilePosition;
+            var elemPosition = targetPosition.ElementPosition;
 
-            var tile = _spaceGridTileCache.Get(gridPosition);
+            var tile = _spaceGridTileCache.Get(tilePosition);
 
-            return tile[tilePos.X, tilePos.Y];
+            return tile[elemPosition.X, elemPosition.Y];
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 using System;
+using Core.Configuration;
 using Core.Model.Game;
 using Core.Model.Space;
 using Core.Model.Space.Grid;
+using Core.Model.Space.Tiles;
 using Core.View;
 
 namespace Core
@@ -22,7 +24,8 @@ namespace Core
             int playerRating,
             SpaceGrid spaceGrid,
             SpaceGridTilesVisibilityManager tilesManager,
-            GameConfiguration conf)
+            GameConfiguration conf
+        )
         {
             _conf = conf;
             _spaceGrid = spaceGrid;
@@ -65,7 +68,7 @@ namespace Core
             _regView = _regView.Shift(delta);
             _playerPosition += delta;
 
-            _tilesManager.OnViewsChanged(_regView, _altView);
+            _tilesManager.OnViewChanged(_altView);
 
             return CurrentState();
         }
@@ -86,7 +89,7 @@ namespace Core
                 _regView = ZoomView(ref _regView, inside, _planets.Show, _planets.Hide);
             }
 
-            _tilesManager.OnViewsChanged(_regView, _altView);
+            _tilesManager.OnViewChanged(_altView);
 
             return CurrentState();
         }
@@ -99,11 +102,7 @@ namespace Core
         /// inside == true -> hide
         /// inside == false -> show
         /// </summary>
-        private Square ZoomView(
-            ref Square view,
-            bool inside,
-            IPlanetAction showAction,
-            IPlanetAction hideAction)
+        private Square ZoomView(ref Square view, bool inside, IPlanetAction showAction, IPlanetAction hideAction)
         {
             var targetZoom = view.Size + (inside ? 0 : 1);
 

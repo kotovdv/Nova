@@ -1,19 +1,18 @@
 using System;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
 
 namespace Core.Model.Space
 {
     [Serializable]
-    [DataContract]
     public readonly struct Color
     {
-        [DataMember]
+        [JsonProperty]
         private readonly byte _r;
 
-        [DataMember]
+        [JsonProperty]
         private readonly byte _g;
 
-        [DataMember]
+        [JsonProperty]
         private readonly byte _b;
 
         public Color(byte r, byte g, byte b)

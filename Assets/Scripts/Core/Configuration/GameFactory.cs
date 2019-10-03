@@ -10,32 +10,36 @@ namespace Core.Configuration
 {
     public static class GameFactory
     {
-        private static readonly int CacheThreadsCount = Mathf.CeilToInt(SystemInfo.processorCount / 2F);
-
         public static (IGame, State) Generate(GameConfiguration conf)
         {
-            var playerRating = ThreadLocalRandom
-                .Current()
-                .Next(conf.MinRating, conf.MaxRating);
+            var playerRating = ThreadLocalRandom.Current().Next(conf.MinRating, conf.MaxRating);
 
-            var tileFactory = SpaceTileFactory.Construct(playerRating, conf);
+            var spaceGridTileCache = new SpaceGridTileCache(
+                Mathf.CeilToInt(SystemInfo.processorCount / 2F),
+                new SpaceTileIO(Application.persistentDataPath),
+                SpaceTileFactory.Construct(conf)
+            );
 
-            var playerPosition = new Position(0, 0);
-            var spaceTileIO = new SpaceTileIO(Application.persistentDataPath);
-
-            var spaceGridTileCache = new SpaceGridTileCache(CacheThreadsCount, spaceTileIO, tileFactory);
             spaceGridTileCache.Init();
 
-            var navigator = new SpaceGridNavigator(conf.TileSize);
-            var grid = new SpaceGrid(navigator, spaceGridTileCache);
+            var gridNavigator = new SpaceGridNavigator(conf.TileSize);
 
-            var visibilityManager = new SpaceGridTilesVisibilityManager(conf.TileSize, navigator, spaceGridTileCache);
+            var visibilityManager = new SpaceGridTilesVisibilityManager(
+                conf.TileSize,
+                gridNavigator,
+                spaceGridTileCache
+            );
 
-            visibilityManager.Init(navigator.FindTile(playerPosition));
-            visibilityManager.SubscribeOnShowTile(spaceGridTileCache.LoadAsync);
-            visibilityManager.SubscribeOnHideTile(spaceGridTileCache.UnloadAsync);
+            var playerPosition = new Position(0, 0);
+            visibilityManager.Init(gridNavigator.FindTile(playerPosition));
 
-            var game = new Game(playerRating, grid, visibilityManager, conf);
+            var game = new Game(
+                playerRating,
+                new SpaceGrid(gridNavigator, spaceGridTileCache),
+                visibilityManager,
+                conf
+            );
+
             var initialState = game.Init(playerPosition);
 
             return (game, initialState);

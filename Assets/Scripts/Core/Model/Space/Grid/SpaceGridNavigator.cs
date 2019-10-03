@@ -11,7 +11,7 @@ namespace Core.Model.Space.Grid
             _tileSize = tileSize;
         }
 
-        public TargetPosition Find(Position position)
+        public GridPosition Find(Position position)
         {
             var xPos = position.X;
             var yPos = position.Y;
@@ -19,21 +19,22 @@ namespace Core.Model.Space.Grid
             var xOffset = position.Y < 0 ? 1 : 0;
             var yOffset = position.X < 0 ? 1 : 0;
 
-            var gridX = (xPos >= 0 ? 1 : -1) + ((xPos + yOffset) / _tileSize);
-            var gridY = (yPos >= 0 ? 1 : -1) + ((yPos + xOffset) / _tileSize);
+            var tileX = (xPos >= 0 ? 1 : -1) + ((xPos + yOffset) / _tileSize);
+            var tileY = (yPos >= 0 ? 1 : -1) + ((yPos + xOffset) / _tileSize);
 
             var xPosRemained = Math.Abs((xPos + xOffset) % _tileSize);
             var yPosRemained = Math.Abs((yPos + yOffset) % _tileSize);
 
-            var tileRow = xPos >= 0 ? xPosRemained : (_tileSize - 1) - xPosRemained;
-            var tileColumn = yPos >= 0 ? yPosRemained : (_tileSize - 1) - yPosRemained;
+            var elemRow = xPos >= 0 ? xPosRemained : (_tileSize - 1) - xPosRemained;
+            var elemColumn = yPos >= 0 ? yPosRemained : (_tileSize - 1) - yPosRemained;
 
-            return new TargetPosition(
-                new Position(gridX, gridY),
-                new Position(tileRow, tileColumn)
+            return new GridPosition(
+                new Position(tileX, tileY),
+                new Position(elemRow, elemColumn)
             );
         }
 
+        //TODO rework
         public Position FindTile(Position position)
         {
             var xPos = position.X;
@@ -42,22 +43,22 @@ namespace Core.Model.Space.Grid
             var xOffset = position.Y < 0 ? 1 : 0;
             var yOffset = position.X < 0 ? 1 : 0;
 
-            var gridX = (xPos >= 0 ? 1 : -1) + ((xPos + yOffset) / _tileSize);
-            var gridY = (yPos >= 0 ? 1 : -1) + ((yPos + xOffset) / _tileSize);
+            var tileX = (xPos >= 0 ? 1 : -1) + ((xPos + yOffset) / _tileSize);
+            var tileY = (yPos >= 0 ? 1 : -1) + ((yPos + xOffset) / _tileSize);
 
-            return new Position(gridX, gridY);
+            return new Position(tileX, tileY);
         }
     }
 
-    public readonly struct TargetPosition
+    public readonly struct GridPosition
     {
-        public readonly Position InGridPosition;
-        public readonly Position InTilePosition;
+        public readonly Position TilePosition;
+        public readonly Position ElementPosition;
 
-        public TargetPosition(Position inGridPosition, Position inTilePosition)
+        public GridPosition(Position tilePosition, Position elementPosition)
         {
-            InGridPosition = inGridPosition;
-            InTilePosition = inTilePosition;
+            TilePosition = tilePosition;
+            ElementPosition = elementPosition;
         }
     }
 }

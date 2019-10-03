@@ -29,14 +29,6 @@ namespace Core.Model.Game
             {Direction.Up, Side.Horizontal},
             {Direction.Down, Side.Horizontal}
         };
-
-        private static readonly IDictionary<Direction, Direction> Opposites = new Dictionary<Direction, Direction>
-        {
-            {Direction.Left, Direction.Right},
-            {Direction.Right, Direction.Left},
-            {Direction.Up, Direction.Down},
-            {Direction.Down, Direction.Up}
-        };
         
         public static Position ToPositionDelta(this Direction direction)
         {

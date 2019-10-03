@@ -1,4 +1,5 @@
 using System;
+using Core.Configuration;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -44,7 +45,7 @@ namespace EngineComponents
             alternativeViewCapacity,
             alternativeViewThreshold * alternativeViewThreshold
         ));
-        
+
         public GameConfiguration GameConfiguration()
         {
             return new GameConfiguration(
@@ -55,8 +56,7 @@ namespace EngineComponents
                 minRating,
                 maxRating,
                 alternativeViewThreshold,
-                alternativeViewCapacity,
-                MaximumObservablePlanets
+                alternativeViewCapacity
             );
         }
 

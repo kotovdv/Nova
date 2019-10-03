@@ -1,17 +1,12 @@
 using System;
-using System.Runtime.Serialization;
 using UnityEngine;
 
 namespace Core.Model.Space
 {
     [Serializable]
-    [DataContract]
     public readonly struct Position
     {
-        [DataMember]
         public readonly int X;
-
-        [DataMember]
         public readonly int Y;
 
         public Position(int x, int y)
@@ -27,7 +22,7 @@ namespace Core.Model.Space
 
         public int At(Axis axis)
         {
-            return axis == Space.Axis.X ? X : Y;
+            return axis == Axis.X ? X : Y;
         }
 
         public static Position operator -(Position p1)

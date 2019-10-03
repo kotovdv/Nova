@@ -1,7 +1,7 @@
 using System.IO;
 using Core.Model.Space;
-using Core.Model.Space.Grid;
 using Core.Model.Space.Grid.IO;
+using Core.Model.Space.Tiles;
 using NUnit.Framework;
 
 namespace Tests
@@ -9,7 +9,7 @@ namespace Tests
     public class SpaceTileIOTest
     {
         private readonly SpaceTileIO _spaceTileIo = new SpaceTileIO(Path.GetTempPath());
-        private readonly SpaceTileFactory _factory = new SpaceTileFactory(100, 10_000, 100, 0, 100, 10);
+        private readonly SpaceTileFactory _factory = new SpaceTileFactory(100, 10_000, 0, 100);
 
         [Test]
         public void SerializationAndDeserialization()
@@ -20,13 +20,10 @@ namespace Tests
 
             var actual = _spaceTileIo.Read(new Position(0, 0));
 
-            Assert.IsTrue(actual[0, 0].Equals(expected[0, 0]));
-            Assert.IsTrue(actual[1, 0].Equals(expected[1, 0]));
-
             for (var x = 0; x < 100; x++)
             for (var y = 0; y < 100; y++)
             {
-                Assert.IsTrue(actual[x,y].HasValue);
+                Assert.IsTrue(actual[x, y].HasValue);
                 Assert.AreEqual(actual[x, y], expected[x, y]);
             }
         }
