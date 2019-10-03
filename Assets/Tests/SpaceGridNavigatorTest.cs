@@ -6,78 +6,130 @@ namespace Tests
 {
     public class SpaceGridNavigatorTest
     {
-        private const int TileSize = 100;
-        private readonly SpaceGridNavigator _navigator = new SpaceGridNavigator(TileSize);
+        private readonly SpaceGridNavigator _singleSizeGrizNavigator = new SpaceGridNavigator(1);
+        private readonly SpaceGridNavigator _fourSizeGridNavigator = new SpaceGridNavigator(4);
+        private readonly SpaceGridNavigator _fiveSizeGridNavigator = new SpaceGridNavigator(5);
 
         [Test]
-        public void ZeroPosition()
+        public void SingleSizeGridNavigatorZeroZero()
         {
-            var result = _navigator.Find(new Position(0, 0));
-            Assert.AreEqual(new Position(1, 1), result.TilePosition);
-            Assert.AreEqual(new Position(0, 0), result.ElementPosition);
+            var zeroPos = new Position(0, 0);
+
+            var zeroPosTile = _singleSizeGrizNavigator.Find(zeroPos);
+            Assert.AreEqual(zeroPos, zeroPosTile.TilePosition);
+            Assert.AreEqual(zeroPos, zeroPosTile.ElementPosition);
         }
 
         [Test]
-        public void NonZeroPositivePositionInFirstTile()
+        public void SingleSizeGridNavigatorTenTen()
         {
-            var result = _navigator.Find(new Position(90, 90));
-            Assert.AreEqual(new Position(1, 1), result.TilePosition);
-            Assert.AreEqual(new Position(90, 90), result.ElementPosition);
+            var zeroPos = new Position(0, 0);
+            var tenPos = new Position(10, 10);
+
+            var tenPosTile = _singleSizeGrizNavigator.Find(tenPos);
+            Assert.AreEqual(tenPos, tenPosTile.TilePosition);
+            Assert.AreEqual(zeroPos, tenPosTile.ElementPosition);
         }
 
         [Test]
-        public void PriorToTileSizePositivePosition()
+        public void SingleSizeGridNavigatorMinusTenMinusTen()
         {
-            var result1 = _navigator.Find(new Position(99, 99));
-            Assert.AreEqual(new Position(1, 1), result1.TilePosition);
-            Assert.AreEqual(new Position(99, 99), result1.ElementPosition);
+            var zeroPos = new Position(0, 0);
+            var minusTenPos = new Position(-10, -10);
+
+            var minusTenPosTile = _singleSizeGrizNavigator.Find(minusTenPos);
+            Assert.AreEqual(minusTenPos, minusTenPosTile.TilePosition);
+            Assert.AreEqual(zeroPos, minusTenPosTile.ElementPosition);
         }
 
         [Test]
-        public void TileSizePositivePosition()
+        public void FourSizeGridNavigatorZeroZero()
         {
-            var result = _navigator.Find(new Position(100, 100));
-            Assert.AreEqual(new Position(2, 2), result.TilePosition);
-            Assert.AreEqual(new Position(0, 0), result.ElementPosition);
-        }
-        [Test]
-        public void AboveTileSizePositivePosition()
-        {
-            var result = _navigator.Find(new Position(101, 101));
-            Assert.AreEqual(new Position(2, 2), result.TilePosition);
-            Assert.AreEqual(new Position(1, 1), result.ElementPosition);
+            var zeroPosition = _fourSizeGridNavigator.Find(new Position(0, 0));
+
+            Assert.AreEqual(new Position(0, 0), zeroPosition.TilePosition);
+            Assert.AreEqual(new Position(2, 2), zeroPosition.ElementPosition);
         }
 
         [Test]
-        public void NonZeroNegativePositionInFirstTile()
+        public void FourSizeGridNavigatorTwoTwo()
         {
-            var result = _navigator.Find(new Position(-10, -10));
-            Assert.AreEqual(new Position(-1, -1), result.TilePosition);
-            Assert.AreEqual(new Position(90, 90), result.ElementPosition);
+            var plusHalfTilePosition = _fourSizeGridNavigator.Find(new Position(2, 2));
+
+            Assert.AreEqual(new Position(1, 1), plusHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(0, 0), plusHalfTilePosition.ElementPosition);
         }
 
         [Test]
-        public void PriorToTileSizeNegativePosition()
+        public void FourSizeGridNavigatorMinusTwoMinusTwo()
         {
-            var result1 = _navigator.Find(new Position(-99, -99));
-            Assert.AreEqual(new Position(-1, -1), result1.TilePosition);
-            Assert.AreEqual(new Position(1, 1), result1.ElementPosition);
+            var minusHalfTilePosition = _fourSizeGridNavigator.Find(new Position(-2, -2));
+
+            Assert.AreEqual(new Position(0, 0), minusHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(0, 0), minusHalfTilePosition.ElementPosition);
+        }
+
+        [Test]
+        public void FourSizeGridNavigatorThreeThree()
+        {
+            var plusMoreThanHalfTilePosition = _fourSizeGridNavigator.Find(new Position(3, 3));
+
+            Assert.AreEqual(new Position(1, 1), plusMoreThanHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(1, 1), plusMoreThanHalfTilePosition.ElementPosition);
         }
         
         [Test]
-        public void TileSizeNegativePosition()
+        public void FourSizeGridNavigatorMinusThreeMinusThree()
         {
-            var result1 = _navigator.Find(new Position(-100, -100));
-            Assert.AreEqual(new Position(-1, -1), result1.TilePosition);
-            Assert.AreEqual(new Position(0, 0), result1.ElementPosition);
+            var minusMoreThanHalfTilePosition = _fourSizeGridNavigator.Find(new Position(-3, -3));
+
+            Assert.AreEqual(new Position(-1, -1), minusMoreThanHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(3, 3), minusMoreThanHalfTilePosition.ElementPosition);
         }
         
         [Test]
-        public void AboveTileSizeNegativePosition()
+        public void FiveSizeGridNavigatorZeroZero()
         {
-            var result = _navigator.Find(new Position(-101, -101));
-            Assert.AreEqual(new Position(-2, -2), result.TilePosition);
-            Assert.AreEqual(new Position(99, 99), result.ElementPosition);
+            var zeroPosition = _fiveSizeGridNavigator.Find(new Position(0, 0));
+
+            Assert.AreEqual(new Position(0, 0), zeroPosition.TilePosition);
+            Assert.AreEqual(new Position(2, 2), zeroPosition.ElementPosition);
+        }
+        
+        [Test]
+        public void FiveSizeGridNavigatorTwoTwo()
+        {
+            var plusHalfTilePosition = _fiveSizeGridNavigator.Find(new Position(2, 2));
+
+            Assert.AreEqual(new Position(0, 0), plusHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(4, 4), plusHalfTilePosition.ElementPosition);
+        }
+        
+        [Test]
+        public void FiveSizeGridNavigatorMinusTwoMinusTwo()
+        {
+            var minusHalfTilePosition = _fiveSizeGridNavigator.Find(new Position(-2, -2));
+
+            Assert.AreEqual(new Position(0, 0), minusHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(0, 0), minusHalfTilePosition.ElementPosition);
+        }
+        
+        [Test]
+        public void FiveSizeGridNavigatorFourFour()
+        {
+            var plusMoreThanHalfTilePosition = _fiveSizeGridNavigator.Find(new Position(4, 4));
+
+            Assert.AreEqual(new Position(1, 1), plusMoreThanHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(1, 1), plusMoreThanHalfTilePosition.ElementPosition);
+        }
+
+        [Test]
+        public void FiveSizeGridNavigatorMinusFourMinusFour()
+        {
+            var minusMoreThanHalfTilePosition = _fiveSizeGridNavigator.Find(new Position(-4, -4));
+
+            Assert.AreEqual(new Position(-1, -1), minusMoreThanHalfTilePosition.TilePosition);
+            Assert.AreEqual(new Position(3, 3), minusMoreThanHalfTilePosition.ElementPosition);
         }
     }
 }

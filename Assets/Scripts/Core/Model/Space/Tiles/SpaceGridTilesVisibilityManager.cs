@@ -30,7 +30,7 @@ namespace Core.Model.Space.Tiles
                 _tilesCache.Load(tilePosition);
             }
         }
-        
+
         public void OnViewChanged(Square view)
         {
             if (view.BottomY % _tileSize != 0 && view.LeftX % _tileSize != 0) return;
