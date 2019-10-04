@@ -41,10 +41,10 @@ namespace EngineComponents
         [SerializeField] private int tileSize = default;
 
         //Maximum amount of planets that can be displayed in any game view.
-        public int MaximumObservablePlanets => Mathf.CeilToInt(Math.Max(
+        public int MaximumObservablePlanets => Mathf.Max(
             alternativeViewCapacity,
             alternativeViewThreshold * alternativeViewThreshold
-        ));
+        );
 
         public GameConfiguration GameConfiguration()
         {
