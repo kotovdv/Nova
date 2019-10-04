@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameView: {fileID: 1120965681}
-  _playerCamera: {fileID: 1884695223}
+  _gridCamera: {fileID: 1884695223}
 --- !u!4 &1120965680
 Transform:
   m_ObjectHideFlags: 0
