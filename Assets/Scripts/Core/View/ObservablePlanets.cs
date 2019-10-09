@@ -27,7 +27,7 @@ namespace Core.View
             _altObservable = new Dictionary<Position, Planet>();
             _readOnlyObservable = new ReadOnlyDictionary<Position, Planet>(_observable);
             _readOnlyAltObservable = new ReadOnlyDictionary<Position, Planet>(_altObservable);
-            _altViewSet = new AltViewSet(altViewCapacity, playerRating);
+            _altViewSet = new AltViewSet(altViewCapacity);
 
             Show = new ShowAction(this);
             Hide = new HideAction(this);
@@ -119,7 +119,7 @@ namespace Core.View
 
             public override void Invoke(Position position, Planet planet)
             {
-                Planets._altViewSet.Add(position, planet.Rating);
+                Planets._altViewSet.Add(position, planet);
             }
         }
 
@@ -131,7 +131,7 @@ namespace Core.View
 
             public override void Invoke(Position position, Planet planet)
             {
-                Planets._altViewSet.Remove(position, planet.Rating);
+                Planets._altViewSet.Remove(position, planet);
             }
         }
     }

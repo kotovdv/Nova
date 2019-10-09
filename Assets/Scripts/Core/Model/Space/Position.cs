@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Core.Model.Space
 {
     [Serializable]
-    public readonly struct Position
+    public readonly struct Position : IComparable<Position>
     {
         public readonly int X;
         public readonly int Y;
@@ -61,6 +61,13 @@ namespace Core.Model.Space
         private bool Equals(ref Position other)
         {
             return X == other.X && Y == other.Y;
+        }
+
+        public int CompareTo(Position other)
+        {
+            var xComparison = X.CompareTo(other.X);
+            if (xComparison != 0) return xComparison;
+            return Y.CompareTo(other.Y);
         }
     }
 }

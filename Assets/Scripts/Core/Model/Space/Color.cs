@@ -6,30 +6,25 @@ namespace Core.Model.Space
     [Serializable]
     public readonly struct Color
     {
-        [JsonProperty]
-        private readonly byte _r;
-
-        [JsonProperty]
-        private readonly byte _g;
-
-        [JsonProperty]
-        private readonly byte _b;
+        public readonly byte R;
+        public readonly byte G;
+        public readonly byte B;
 
         public Color(byte r, byte g, byte b)
         {
-            _r = r;
-            _g = g;
-            _b = b;
+            R = r;
+            G = g;
+            B = b;
         }
 
         public UnityEngine.Color ToUnityEngineColor()
         {
-            return new UnityEngine.Color(_r / 255F, _g / 255F, _b / 255F);
+            return new UnityEngine.Color(R / 255F, G / 255F, B / 255F);
         }
 
         public bool Equals(Color other)
         {
-            return _r == other._r && _g == other._g && _b == other._b;
+            return R == other.R && G == other.G && B == other.B;
         }
 
         public override bool Equals(object obj)
@@ -41,16 +36,16 @@ namespace Core.Model.Space
         {
             unchecked
             {
-                var hashCode = _r.GetHashCode();
-                hashCode = (hashCode * 397) ^ _g.GetHashCode();
-                hashCode = (hashCode * 397) ^ _b.GetHashCode();
+                var hashCode = R.GetHashCode();
+                hashCode = (hashCode * 397) ^ G.GetHashCode();
+                hashCode = (hashCode * 397) ^ B.GetHashCode();
                 return hashCode;
             }
         }
 
         public override string ToString()
         {
-            return $"{nameof(_r)}: {_r}, {nameof(_g)}: {_g}, {nameof(_b)}: {_b}";
+            return $"{nameof(R)}: {R}, {nameof(G)}: {G}, {nameof(B)}: {B}";
         }
     }
 }

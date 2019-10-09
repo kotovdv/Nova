@@ -1,3 +1,4 @@
+using System;
 using Core.Configuration;
 using Core.Util;
 using UnityEngine;
@@ -8,15 +9,17 @@ namespace Core.Model.Space.Tiles
     public class SpaceTileFactory
     {
         private readonly int _tileSize;
+        private readonly int _playerRating;
         private readonly int _planetsPerTile;
         private readonly int _planetMinRating;
         private readonly int _planetMaxRating;
 
-        public static SpaceTileFactory Construct(GameConfiguration conf)
+        public static SpaceTileFactory Construct(int playerRating, GameConfiguration conf)
         {
             var planetsPerTile = Mathf.CeilToInt(conf.Density * (conf.TileSize * conf.TileSize));
 
             return new SpaceTileFactory(
+                playerRating,
                 conf.TileSize,
                 planetsPerTile,
                 conf.MinRating,
@@ -24,8 +27,10 @@ namespace Core.Model.Space.Tiles
             );
         }
 
-        public SpaceTileFactory(int tileSize, int planetsPerTile, int planetMinRating, int planetMaxRating)
+        public SpaceTileFactory(int playerRating, int tileSize, int planetsPerTile, int planetMinRating,
+            int planetMaxRating)
         {
+            _playerRating = playerRating;
             _planetsPerTile = planetsPerTile;
             _tileSize = tileSize;
             _planetMinRating = planetMinRating;
@@ -59,8 +64,8 @@ namespace Core.Model.Space.Tiles
                     var b = (byte) rnd.Next(256);
 
                     var color = new Color(r, g, b);
-
-                    var planet = new Planet(planetRating, color);
+                    var ratingDelta = Math.Abs(_playerRating - planetRating);
+                    var planet = new Planet(planetRating, color, ratingDelta);
                     storage[i, j] = planet;
 
                     currentCount++;

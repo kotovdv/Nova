@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Core.Model.Space;
 using Core.Util;
@@ -8,42 +7,68 @@ namespace Core.View
     public class AltViewSet
     {
         private readonly int _capacity;
-        private readonly int _playerRating;
-
+        private readonly IDictionary<int, AltViewRow> _rows;
         private readonly IList<Position> _currentlyVisibleBuffer;
         private readonly SortedDictionary<int, LinkedHashSet<Position>> _storage;
 
-        public AltViewSet(int capacity, int playerRating)
+        public AltViewSet(int capacity)
         {
             _capacity = capacity;
-            _playerRating = playerRating;
+            _rows = new Dictionary<int, AltViewRow>();
             _currentlyVisibleBuffer = new List<Position>(_capacity);
             _storage = new SortedDictionary<int, LinkedHashSet<Position>>();
         }
 
-        public void Add(Position position, int planetRating)
+        public void Add(Position position, Planet planet)
         {
-            var ratingDelta = CalculateDelta(planetRating);
+            if (!_rows.TryGetValue(position.X, out var row))
+            {
+                row = new AltViewRow(_capacity);
+                _rows[position.X] = row;
+            }
 
-            if (!_storage.TryGetValue(ratingDelta, out var set))
+            var replaced = row.Add(position, planet);
+            if (!replaced.HasValue || !replaced.Value.Equals(position))
+            {
+                AddToStorage(position, planet);
+            }
+            else
+            {
+                RemoveFromStorage(position, planet);
+            }
+        }
+
+        public void Remove(Position position, Planet planet)
+        {
+            if (!_rows.TryGetValue(position.X, out var row)) return;
+            if (!row.Remove(position, planet)) return;
+
+            RemoveFromStorage(position, planet);
+            if (row.IsEmpty())
+            {
+                _rows.Remove(position.X);
+            }
+        }
+
+        private void AddToStorage(Position position, Planet planet)
+        {
+            if (!_storage.TryGetValue(planet.RatingDelta, out var set))
             {
                 set = new LinkedHashSet<Position>();
-                _storage[ratingDelta] = set;
+                _storage[planet.RatingDelta] = set;
             }
 
             set.Add(position);
         }
 
-        public void Remove(Position position, int planetRating)
+        private void RemoveFromStorage(Position position, Planet planet)
         {
-            var ratingDelta = CalculateDelta(planetRating);
-
-            if (!_storage.TryGetValue(ratingDelta, out var set)) return;
+            if (!_storage.TryGetValue(planet.RatingDelta, out var set)) return;
 
             set.Remove(position);
             if (set.IsEmpty())
             {
-                _storage.Remove(ratingDelta);
+                _storage.Remove(planet.RatingDelta);
             }
         }
 
@@ -65,11 +90,6 @@ namespace Core.View
             }
 
             return _currentlyVisibleBuffer;
-        }
-
-        private int CalculateDelta(int planetRating)
-        {
-            return Math.Abs(_playerRating - planetRating);
         }
     }
 }

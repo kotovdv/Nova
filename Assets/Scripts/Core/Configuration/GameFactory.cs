@@ -17,7 +17,7 @@ namespace Core.Configuration
             var spaceGridTileCache = new SpaceGridTileCache(
                 Mathf.CeilToInt(SystemInfo.processorCount / 2F),
                 new SpaceTileIO(Application.persistentDataPath),
-                SpaceTileFactory.Construct(conf)
+                SpaceTileFactory.Construct(playerRating, conf)
             );
 
             spaceGridTileCache.Init();
