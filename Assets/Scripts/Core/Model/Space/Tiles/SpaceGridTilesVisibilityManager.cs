@@ -69,6 +69,22 @@ namespace Core.Model.Space.Tiles
                     }
                 }
             }
+            
+            //Bottom left
+            _tilesCache.LoadAsync(new Position(bottomLeftTile.X - ShowOffset, bottomLeftTile.Y - ShowOffset));
+            _tilesCache.LoadAsync(new Position(bottomLeftTile.X - HideOffset, bottomLeftTile.Y - HideOffset));
+
+            //Bottom right
+            _tilesCache.LoadAsync(new Position(topRightTile.X + ShowOffset, bottomLeftTile.Y - ShowOffset));
+            _tilesCache.LoadAsync(new Position(topRightTile.X + HideOffset, bottomLeftTile.Y - HideOffset));
+            
+            //Top left
+            _tilesCache.LoadAsync(new Position(bottomLeftTile.X - ShowOffset, topRightTile.Y + ShowOffset));
+            _tilesCache.LoadAsync(new Position(bottomLeftTile.X - HideOffset, topRightTile.Y + HideOffset));
+
+            //Top right
+            _tilesCache.LoadAsync(new Position(topRightTile.X + ShowOffset, topRightTile.Y + ShowOffset));
+            _tilesCache.LoadAsync(new Position(topRightTile.X + HideOffset, topRightTile.Y + HideOffset));
         }
     }
 }
