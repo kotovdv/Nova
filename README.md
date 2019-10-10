@@ -25,9 +25,9 @@
 Проект разделен на две части:
 
 1. Core.
-2. Unity Related. 
+2. Engine Related. 
 
-#### Unity Related
+#### Engine Related
 
 Отвечает за отображение состояния игрового мира.
 
