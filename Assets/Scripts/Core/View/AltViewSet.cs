@@ -9,87 +9,115 @@ namespace Core.View
         private readonly int _capacity;
         private readonly IDictionary<int, AltViewRow> _rows;
         private readonly IList<Position> _currentlyVisibleBuffer;
-        private readonly SortedDictionary<int, LinkedHashSet<Position>> _storage;
+        private readonly SortedDictionary<int, LinkedHashSet<int>> _rowsSorted;
 
         public AltViewSet(int capacity)
         {
             _capacity = capacity;
             _rows = new Dictionary<int, AltViewRow>();
             _currentlyVisibleBuffer = new List<Position>(_capacity);
-            _storage = new SortedDictionary<int, LinkedHashSet<Position>>();
+            _rowsSorted = new SortedDictionary<int, LinkedHashSet<int>>();
         }
 
         public void Add(Position position, Planet planet)
         {
-            if (!_rows.TryGetValue(position.X, out var row))
-            {
-                row = new AltViewRow(_capacity);
-                _rows[position.X] = row;
-            }
+            var row = GetRow(position);
+            var addResult = row.Add(position, planet);
 
-            var replaced = row.Add(position, planet);
-            if (!replaced.HasValue || !replaced.Value.Equals(position))
+            if (addResult.InitialMinDelta.HasValue)
             {
-                AddToStorage(position, planet);
+                var initialDelta = addResult.InitialMinDelta.Value;
+                //Addition changed bucket
+                if (addResult.CurrentMinDelta != initialDelta)
+                {
+                    RemoveFromDeltaStorage(initialDelta, position);
+                    AddToDeltaStorage(addResult.CurrentMinDelta, position);
+                }
             }
             else
             {
-                RemoveFromStorage(position, planet);
+                AddToDeltaStorage(addResult.CurrentMinDelta, position);
             }
         }
 
         public void Remove(Position position, Planet planet)
         {
-            if (!_rows.TryGetValue(position.X, out var row)) return;
-            if (!row.Remove(position, planet)) return;
+            var row = GetRow(position);
+            var removeResult = row.Remove(position, planet);
+            if (!removeResult.Removed) return;
+            if (row.IsEmpty()) _rows.Remove(position.X);
 
-            RemoveFromStorage(position, planet);
-            if (row.IsEmpty())
+            var initialMinDelta = removeResult.InitialMinDelta;
+            var currentMinDelta = removeResult.CurrentMinDelta;
+
+            if (initialMinDelta.HasValue && !currentMinDelta.HasValue)
             {
-                _rows.Remove(position.X);
+                //Row became empty
+                RemoveFromDeltaStorage(initialMinDelta.Value, position);
             }
-        }
-
-        private void AddToStorage(Position position, Planet planet)
-        {
-            if (!_storage.TryGetValue(planet.RatingDelta, out var set))
+            else if (initialMinDelta.HasValue && (initialMinDelta.Value != currentMinDelta.Value))
             {
-                set = new LinkedHashSet<Position>();
-                _storage[planet.RatingDelta] = set;
-            }
-
-            set.Add(position);
-        }
-
-        private void RemoveFromStorage(Position position, Planet planet)
-        {
-            if (!_storage.TryGetValue(planet.RatingDelta, out var set)) return;
-
-            set.Remove(position);
-            if (set.IsEmpty())
-            {
-                _storage.Remove(planet.RatingDelta);
+                //Row changed bucket
+                RemoveFromDeltaStorage(initialMinDelta.Value, position);
+                AddToDeltaStorage(currentMinDelta.Value, position);
             }
         }
 
         public IEnumerable<Position> CurrentlyVisible()
         {
             _currentlyVisibleBuffer.Clear();
-            var counter = 0;
 
-            foreach (var kvp in _storage)
+            foreach (var kvp in _rowsSorted)
             {
-                var positions = kvp.Value;
-                if (counter == _capacity) break;
-                foreach (var position in positions)
+                var rowNumbers = kvp.Value;
+                if (_currentlyVisibleBuffer.Count == _capacity) break;
+                foreach (var rowNumber in rowNumbers)
                 {
-                    if (counter == _capacity) break;
-                    _currentlyVisibleBuffer.Add(position);
-                    counter++;
+                    var currentCount = _currentlyVisibleBuffer.Count;
+                    if (currentCount == _capacity) break;
+
+                    var currentRow = _rows[rowNumber];
+                    currentRow.PeekTopValues(_currentlyVisibleBuffer, _capacity - currentCount);
                 }
             }
 
             return _currentlyVisibleBuffer;
+        }
+
+        private void AddToDeltaStorage(int ratingDelta, Position position)
+        {
+            var deltaStorage = GetRowsWithDelta(ratingDelta);
+            deltaStorage.Add(position.X);
+        }
+
+        private void RemoveFromDeltaStorage(int ratingDelta, Position position)
+        {
+            var deltaStorage = GetRowsWithDelta(ratingDelta);
+            deltaStorage.Remove(position.X);
+            if (deltaStorage.IsEmpty())
+            {
+                _rowsSorted.Remove(ratingDelta);
+            }
+        }
+
+        private AltViewRow GetRow(Position position)
+        {
+            if (_rows.TryGetValue(position.X, out var row)) return row;
+
+            row = new AltViewRow(_capacity);
+            _rows[position.X] = row;
+
+            return row;
+        }
+
+        private LinkedHashSet<int> GetRowsWithDelta(int ratingDelta)
+        {
+            if (_rowsSorted.TryGetValue(ratingDelta, out var set)) return set;
+
+            set = new LinkedHashSet<int>();
+            _rowsSorted[ratingDelta] = set;
+
+            return set;
         }
     }
 }
