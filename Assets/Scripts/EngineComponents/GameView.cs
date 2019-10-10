@@ -47,13 +47,15 @@ namespace EngineComponents
         {
             _zoom = state.Zoom;
             uiView.UpdateZoom(_zoom);
-            if (state.IsRegularView)
-            {
-                gridCamera.Adjust(_zoom);
-            }
+            if (state.IsRegularView) gridCamera.Adjust(_zoom);
 
             var playerPosition = state.PlayerPosition;
             uiView.UpdatePosition(playerPosition);
+            DisplayPlanets(state, playerPosition.ToVector3());
+        }
+
+        private void DisplayPlanets(State state, Vector3 playerPosition)
+        {
             foreach (var posPlanet in _planetViews)
             {
                 var planetView = posPlanet.Value;
@@ -61,12 +63,8 @@ namespace EngineComponents
                 _planetsPool.Return(planetView);
             }
 
-            DisplayPlanets(state, playerPosition.ToVector3());
-        }
-
-        private void DisplayPlanets(State state, Vector3 playerPosition)
-        {
             _planetViews.Clear();
+
             var sideSquare = Mathf.Pow(_zoom / 2F, 2);
             var maxDistance = Mathf.Sqrt(sideSquare + sideSquare);
             foreach (var posPlanet in state.VisiblePlanets)
